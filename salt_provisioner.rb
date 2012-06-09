@@ -43,11 +43,11 @@ class SaltProvisioner < Vagrant::Provisioners::Base
   end
 
   def install_salt_master
-    env[:vm].channel.sudo("apt-get -q -y install salt-master -y")
+    env[:vm].channel.sudo("apt-get -q -y install salt-master")
   end
 
   def install_salt_minion
-    env[:vm].channel.sudo("apt-get -q -y install salt-minion -y")
+    env[:vm].channel.sudo("apt-get -q -y install salt-minion")
   end
 
   def accept_minion_key

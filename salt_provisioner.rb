@@ -2,7 +2,7 @@ class SaltProvisioner < Vagrant::Provisioners::Base
 
   class Config < Vagrant::Config::Base
     attr_accessor :minion_config
-    attr_accessor :local_master
+    attr_accessor :masterless
     attr_accessor :master_config
     attr_accessor :salt_file_root_path
     attr_accessor :salt_file_root_guest_path
@@ -11,7 +11,7 @@ class SaltProvisioner < Vagrant::Provisioners::Base
 
 
     def minion_config; @minion_config || "salt/minion"; end
-    def local_master; @local_master || true; end
+    def masterless; @masterless || true; end
     def master_config; @master_config || "salt/master"; end
     def salt_file_root_path; @salt_file_root_path || "salt/roots/salt"; end
     def salt_file_root_guest_path; @salt_file_root_guest_path || "/srv/salt"; end
@@ -31,8 +31,7 @@ class SaltProvisioner < Vagrant::Provisioners::Base
     # Calculate the paths we're going to use based on the environment
     @expanded_minion_config_path = config.expanded_path(env[:root_path], config.minion_config)
 
-    if config.use_master
-      @expanded_master_config_path = config.expanded_path(env[:root_path], config.master_config)
+    if config.masterless
       @expanded_salt_file_root_path = config.expanded_path(env[:root_path], config.salt_file_root_path)
       @expanded_salt_pillar_root_path = config.expanded_path(env[:root_path], config.salt_pillar_root_path)
       share_salt_file_root_path
@@ -77,25 +76,20 @@ class SaltProvisioner < Vagrant::Provisioners::Base
 
   def upload_minion_config
     env[:ui].info "Copying salt minion config to vm."
-    env[:vm].channel.upload(@expanded_minion_config_path, "/etc/salt/minion")
+    env[:vm].channel.upload(@expanded_minion_config_path.to_s, "/tmp/minion")
+    env[:vm].channel.sudo("mv /tmp/minion /etc/salt/minion")
   end
 
   def upload_master_config
     env[:ui].info "Copying salt master config to vm."
-    env[:vm].channel.upload(@expanded_master_config_path, "/etc/salt/master")
+    env[:vm].channel.upload(@expanded_master_config_path.to_s, "/tmp/master")
+    env[:vm].channel.sudo("mv /tmp/master /etc/salt/master")
   end
 
   def provision!
     add_salt_repo
-    upload_minion_config
     install_salt_minion
-
-    if config.use_master
-      upload_master_config
-      install_salt_master
-      accept_minion_key
-    end
-
+    upload_minion_config
     call_highstate
   end
 

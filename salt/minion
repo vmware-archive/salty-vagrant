@@ -133,7 +133,7 @@ master: localhost
 # Set the file client, the client defaults to looking on the master server for
 # files, but can be directed to look at the local file directory setting 
 # defined below by setting it to local.
-#file_client: remote
+file_client: local
 
 # The file directory works on environments passed to the minion, each environment
 # can have multiple root directories, the subdirectories in the multiple file

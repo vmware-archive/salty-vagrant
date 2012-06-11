@@ -11,7 +11,7 @@ class SaltProvisioner < Vagrant::Provisioners::Base
 
 
     def minion_config; @minion_config || "salt/minion"; end
-    def local_master; @local_master || false; end
+    def local_master; @local_master || true; end
     def master_config; @master_config || "salt/master"; end
     def salt_file_root_path; @salt_file_root_path || "salt/roots/salt"; end
     def salt_file_root_guest_path; @salt_file_root_guest_path || "/srv/salt"; end

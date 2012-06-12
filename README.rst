@@ -65,8 +65,9 @@ Replace ``[minion_id]`` with the id you would like to assign the minion.
 
 Next you want to bundle the key pair along with your Vagrantfile, 
 the salt_provisioner.rb, and your minion config. The directory should look 
-something like this::
+something like this:
 
+.. code::
     myvagrant/
         Vagrantfile
         salt_provisioner.rb
@@ -89,8 +90,9 @@ Make sure you use the same ``[minion_id]`` that you used on the master or
 it will not match with the key.
 
 Your ``Vagrantfile`` will need to contain three settings, and should look 
-roughly like this:: ruby
+roughly like this:
 
+.. code:: ruby
     require './salt_provisioner.rb'
 
     Vagrant::Config.run do |config|

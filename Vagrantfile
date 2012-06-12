@@ -17,7 +17,7 @@ Vagrant::Config.run do |config|
   	## If you have a remote master setup, you can add
   	## your preseeded minion key
     # salt.master = true
-    # salt.minion_key = "salt/testing.pem"
-    # salt.minion_pub = "salt/testing.pub"
+    # salt.minion_key = "salt/key/testing.pem"
+    # salt.minion_pub = "salt/key/testing.pub"
   # end
 end

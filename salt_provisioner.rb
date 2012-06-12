@@ -11,7 +11,7 @@ class SaltProvisioner < Vagrant::Provisioners::Base
     attr_accessor :salt_pillar_root_guest_path
 
 
-    def minion_config; @minion_config || "salt/minion"; end
+    def minion_config; @minion_config || "salt/minion.conf"; end
     def minion_key; @minion_key || false; end
     def minion_pub; @minion_pub || false; end
     def master; @master || false; end

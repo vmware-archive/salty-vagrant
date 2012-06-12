@@ -67,7 +67,7 @@ Next you want to bundle the key pair along with your Vagrantfile,
 the salt_provisioner.rb, and your minion config. The directory should look 
 something like this:
 
-.. code::
+.. code-block::
     myvagrant/
         Vagrantfile
         salt_provisioner.rb
@@ -92,7 +92,7 @@ it will not match with the key.
 Your ``Vagrantfile`` will need to contain three settings, and should look 
 roughly like this:
 
-.. code:: ruby
+.. code-block:: ruby
     require './salt_provisioner.rb'
 
     Vagrant::Config.run do |config|

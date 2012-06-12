@@ -5,7 +5,6 @@ class SaltProvisioner < Vagrant::Provisioners::Base
     attr_accessor :minion_key
     attr_accessor :minion_pub
     attr_accessor :masterless
-    attr_accessor :master_config
     attr_accessor :salt_file_root_path
     attr_accessor :salt_file_root_guest_path
     attr_accessor :salt_pillar_root_path
@@ -16,7 +15,6 @@ class SaltProvisioner < Vagrant::Provisioners::Base
     def minion_key; @minion_key || false; end
     def minion_pub; @minion_pub || false; end
     def masterless; @masterless || true; end
-    def master_config; @master_config || "salt/master"; end
     def salt_file_root_path; @salt_file_root_path || "salt/roots/salt"; end
     def salt_file_root_guest_path; @salt_file_root_guest_path || "/srv/salt"; end
     def salt_pillar_root_path; @salt_file_root_path || "salt/roots/pillar"; end
@@ -34,8 +32,8 @@ class SaltProvisioner < Vagrant::Provisioners::Base
   def prepare
     # Calculate the paths we're going to use based on the environment
     @expanded_minion_config_path = config.expanded_path(env[:root_path], config.minion_config)
-
     if config.masterless
+      env[:ui].info "Adding state tree folders."
       @expanded_salt_file_root_path = config.expanded_path(env[:root_path], config.salt_file_root_path)
       @expanded_salt_pillar_root_path = config.expanded_path(env[:root_path], config.salt_pillar_root_path)
       share_salt_file_root_path
@@ -61,11 +59,6 @@ class SaltProvisioner < Vagrant::Provisioners::Base
     env[:vm].channel.sudo("apt-get -q -y install python-software-properties")
     env[:vm].channel.sudo("add-apt-repository -y ppa:saltstack/salt")
     env[:vm].channel.sudo("apt-get -q -y update")
-  end
-
-  def install_salt_master
-    env[:ui].info "Installing salt master."
-    env[:vm].channel.sudo("apt-get -q -y install salt-master")
   end
 
   def install_salt_minion

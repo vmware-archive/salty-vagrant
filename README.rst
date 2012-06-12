@@ -50,8 +50,7 @@ following:
 #. Manually accept the vagrant's minion key after it boots. [#accept_key]_
 #. Preseed the Vagrant box with minion keys pre-generated on the master
 
-.. [#accept_key] This is not recommended. If your developers need to destroy
-and rebuild their VM, you will have to repeat the process.
+.. [#accept_key] This is not recommended. If your developers need to destroy and rebuild their VM, you will have to repeat the process.
 
 Preseeding Vagrant Minion Keys
 ------------------------------
@@ -66,7 +65,7 @@ Replace ``[minion_id]`` with the id you would like to assign the minion.
 
 Next you want to bundle the key pair along with your Vagrantfile, 
 the salt_provisioner.rb, and your minion config. The directory should look 
-something like this:
+something like this::
 
     myvagrant/
         Vagrantfile

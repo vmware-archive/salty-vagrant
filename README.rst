@@ -107,3 +107,34 @@ Now you should be able to run ``vagrant up`` and the salt should put your
 vagrant minion in state.highstate.
 
 
+Configuration
+==============
+
+Inside of your Vagrantfile, there are a few parameters you can assign 
+depending on whether you are running masterless or with a remote master.
+
+minion_config : "salt/minion.conf"
+    Path to your minion configuration file.
+
+minion_key : false
+    String path to your minion key. Only useful with ``master=true``
+
+minion_pub : false
+    String path to your minion public key. Only useful with ``master=true``
+
+master : false
+    Boolean whether or not you want to use a remote master.
+
+salt_file_root_path : "salt/roots/salt"
+    String path to your salt state tree. Only useful with ``master=false``.
+
+salt_file_root_guest_path : "/srv/salt"
+    Path to share the file root state tree on the VM. Only use with ``master=false``.
+
+salt_pillar_root_path : "salt/roots/pillar"
+    Path to share your pillar tree. Only useful with ``master=false``.
+
+salt_pillar_root_guest_path : "/srv/pillar"
+    Path on VM where pillar tree will be shared. Only use with ``master=true``
+
+

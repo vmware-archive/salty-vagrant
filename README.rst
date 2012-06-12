@@ -37,4 +37,4 @@ Quick Start (masterless)
 5. Place your minion config in ``salt/minion`` [#]_
 6. Run ``vagrant up`` and you should be good to go.
 
-..[#] Make sure your minion config sets ``file_client: local`` for masterless
+.. [#] Make sure your minion config sets ``file_client: local`` for masterless

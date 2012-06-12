@@ -4,7 +4,7 @@ class SaltProvisioner < Vagrant::Provisioners::Base
     attr_accessor :minion_config
     attr_accessor :minion_key
     attr_accessor :minion_pub
-    attr_accessor :masterless
+    attr_accessor :master
     attr_accessor :salt_file_root_path
     attr_accessor :salt_file_root_guest_path
     attr_accessor :salt_pillar_root_path
@@ -14,7 +14,7 @@ class SaltProvisioner < Vagrant::Provisioners::Base
     def minion_config; @minion_config || "salt/minion"; end
     def minion_key; @minion_key || false; end
     def minion_pub; @minion_pub || false; end
-    def masterless; @masterless || true; end
+    def master; @master || false; end
     def salt_file_root_path; @salt_file_root_path || "salt/roots/salt"; end
     def salt_file_root_guest_path; @salt_file_root_guest_path || "/srv/salt"; end
     def salt_pillar_root_path; @salt_file_root_path || "salt/roots/pillar"; end
@@ -32,7 +32,7 @@ class SaltProvisioner < Vagrant::Provisioners::Base
   def prepare
     # Calculate the paths we're going to use based on the environment
     @expanded_minion_config_path = config.expanded_path(env[:root_path], config.minion_config)
-    if config.masterless
+    if !config.master
       env[:ui].info "Adding state tree folders."
       @expanded_salt_file_root_path = config.expanded_path(env[:root_path], config.salt_file_root_path)
       @expanded_salt_pillar_root_path = config.expanded_path(env[:root_path], config.salt_pillar_root_path)

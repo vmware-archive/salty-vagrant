@@ -59,8 +59,10 @@ Preseeding Vagrant Minion Keys
 On the master, create the keypair and add the public key to the accepted minions 
 folder::
 
-    root@saltmaster# salt-key --gen-keys=minion_id
-    root@saltmaster# cp minion_id.pub /etc/salt/pki/minions/minion_id
+    root@saltmaster# salt-key --gen-keys=[minion_id]
+    root@saltmaster# cp minion_id.pub /etc/salt/pki/minions/[minion_id]
+
+Replace ``[minion_id]`` with the id you would like to assign the minion. 
 
 Next you want to bundle the key pair along with your Vagrantfile, 
 the salt_provisioner.rb, and your minion config. The directory should look 
@@ -79,3 +81,28 @@ You will need to determine your own secure method of transferring this
 package. Leaking the minion's private key poses a security risk to your salt 
 network.
 
+The are two required settings for your ``minion.conf`` file::
+
+    master: [master_fqdn]
+    id: [minion_id]
+
+Make sure you use the same ``[minion_id]`` that you used on the master or 
+it will not match with the key.
+
+Your ``Vagrantfile`` will need to contain three settings, and should look 
+roughly like this::
+
+    require './salt_provisioner.rb'
+
+    Vagrant::Config.run do |config|
+      config.vm.box = "precise64"
+
+      config.vm.provision SaltProvisioner do |salt|
+        salt.master = true
+        salt.minion_key = "salt/key/minion_id.pem"
+        salt.minion_pub = "salt/key/minion_id.pub"
+      end
+    end
+
+Now you should be able to run ``vagrant up`` and the salt should put your 
+vagrant minion in state.highstate.

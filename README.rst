@@ -28,7 +28,7 @@ tree. If you use a salt master, you will either need to manually accept
 new vagrant minions on the master, or distribute preseeded keys along with 
 your vagrant files.
 
-Quick Start (masterless)
+Masterless (Quick Start)
 ========================
 
 1. Install `Vagrant`_
@@ -105,3 +105,5 @@ roughly like this::
 
 Now you should be able to run ``vagrant up`` and the salt should put your 
 vagrant minion in state.highstate.
+
+

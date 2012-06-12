@@ -7,7 +7,7 @@ Vagrant::Config.run do |config|
 
   ## SaltProvisioner settings are set like this:
   # config.vm.provision SaltProvisioner do |salt|
-  	# salt.minion_config = "salt/minion"
+  	# salt.minion_config = "salt/minion.conf"
 
   	## Only Use these with a masterless setup to
   	## load your state tree:

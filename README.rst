@@ -34,7 +34,7 @@ Quick Start (masterless)
 2. Get the Ubuntu 12.04 base box: ``vagrant box add precise64 http://files.vagrantup.com/precise64.box``
 3. Download or clone this repository.
 4. Place your salt state tree in ``salt/roots/salt``
-5. Place your minion config in ``salt/minion``[#]_
+5. Place your minion config in ``salt/minion`` [#]_
 6. Run ``vagrant up`` and you should be good to go.
 
 ..[#] Make sure your minion config sets ``file_client: local`` for masterless

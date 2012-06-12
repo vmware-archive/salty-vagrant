@@ -123,7 +123,8 @@ minion_pub : false
     String path to your minion public key. Only useful with ``master=true``
 
 master : false
-    Boolean whether or not you want to use a remote master.
+    Boolean whether or not you want to use a remote master. If set to false,
+    make sure your minion config file has ``file_client: local`` set.
 
 salt_file_root_path : "salt/roots/salt"
     String path to your salt state tree. Only useful with ``master=false``.

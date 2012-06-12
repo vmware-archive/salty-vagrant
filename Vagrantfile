@@ -11,8 +11,8 @@ Vagrant::Config.run do |config|
 
   	## Only Use these with a masterless setup to
   	## load your state tree:
-  	# salt.salt_file_root_path = "salt/salt"
-  	# salt.salt_pillar_root_path = "salt/pillar"
+  	# salt.salt_file_root_path = "salt/roots/salt"
+  	# salt.salt_pillar_root_path = "salt/roots/pillar"
 
   	## If you have a remote master setup, you can add
   	## your preseeded minion key

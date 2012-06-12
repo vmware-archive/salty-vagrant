@@ -89,7 +89,7 @@ Make sure you use the same ``[minion_id]`` that you used on the master or
 it will not match with the key.
 
 Your ``Vagrantfile`` will need to contain three settings, and should look 
-roughly like this:: <ruby>
+roughly like this:: ruby
 
     require './salt_provisioner.rb'
 

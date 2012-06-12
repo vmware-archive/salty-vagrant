@@ -2,6 +2,8 @@ class SaltProvisioner < Vagrant::Provisioners::Base
 
   class Config < Vagrant::Config::Base
     attr_accessor :minion_config
+    attr_accessor :minion_key
+    attr_accessor :minion_pub
     attr_accessor :masterless
     attr_accessor :master_config
     attr_accessor :salt_file_root_path
@@ -11,6 +13,8 @@ class SaltProvisioner < Vagrant::Provisioners::Base
 
 
     def minion_config; @minion_config || "salt/minion"; end
+    def minion_key; @minion_key || false; end
+    def minion_pub; @minion_pub || false; end
     def masterless; @masterless || true; end
     def master_config; @master_config || "salt/master"; end
     def salt_file_root_path; @salt_file_root_path || "salt/roots/salt"; end
@@ -36,6 +40,11 @@ class SaltProvisioner < Vagrant::Provisioners::Base
       @expanded_salt_pillar_root_path = config.expanded_path(env[:root_path], config.salt_pillar_root_path)
       share_salt_file_root_path
       share_salt_pillar_root_path
+    end
+
+    if config.minion_key
+      @expanded_minion_key_path = config.expanded_path(env[:root_path], config.minion_key)
+      @expanded_minion_pub_path = config.expanded_path(env[:root_path], config.minion_pub)
     end
   end
 
@@ -80,16 +89,21 @@ class SaltProvisioner < Vagrant::Provisioners::Base
     env[:vm].channel.sudo("mv /tmp/minion /etc/salt/minion")
   end
 
-  def upload_master_config
-    env[:ui].info "Copying salt master config to vm."
-    env[:vm].channel.upload(@expanded_master_config_path.to_s, "/tmp/master")
-    env[:vm].channel.sudo("mv /tmp/master /etc/salt/master")
+  def upload_minion_keys
+    env[:ui].info "Uploading minion key."
+    env[:vm].channel.upload(@expanded_minion_key_path.to_s, "/tmp/minion.pem")
+    env[:vm].channel.sudo("mv /tmp/minion.pem /etc/salt/pki/minion.pem")
+    env[:vm].channel.upload(@expanded_minion_pub_path.to_s, "/tmp/minion.pub")
+    env[:vm].channel.sudo("mv /tmp/minion.pub /etc/salt/pki/minion.pub")
   end
 
   def provision!
     add_salt_repo
     install_salt_minion
     upload_minion_config
+    if config.minion_key
+      upload_minion_keys
+    end
     call_highstate
   end
 

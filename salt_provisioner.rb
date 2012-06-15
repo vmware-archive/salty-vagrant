@@ -17,8 +17,8 @@ class SaltProvisioner < Vagrant::Provisioners::Base
     def master; @master || false; end
     def salt_file_root_path; @salt_file_root_path || "salt/roots/salt"; end
     def salt_file_root_guest_path; @salt_file_root_guest_path || "/srv/salt"; end
-    def salt_pillar_root_path; @salt_file_root_path || "salt/roots/pillar"; end
-    def salt_pillar_root_guest_path; @salt_file_root_guest_path || "/srv/pillar"; end
+    def salt_pillar_root_path; @salt_pillar_root_path || "salt/roots/pillar"; end
+    def salt_pillar_root_guest_path; @salt_pillar_root_guest_path || "/srv/pillar"; end
 
     def expanded_path(root_path, rel_path)
       Pathname.new(rel_path).expand_path(root_path)

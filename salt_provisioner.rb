@@ -73,7 +73,9 @@ class SaltProvisioner < Vagrant::Provisioners::Base
 
   def call_highstate
     env[:ui].info "Calling state.highstate"
-    env[:vm].channel.sudo("salt-call state.highstate")
+    env[:vm].channel.sudo("salt-call state.highstate") do |type, data|
+      env[:ui].info(data)
+    end
   end
 
   def upload_minion_config

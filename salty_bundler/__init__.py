@@ -2,10 +2,10 @@
 Utilities for using salt with vagrant.
 '''
 
-
 import tempfile
 import uuid
-
+import os
+import shutil
 
 
 def create_minion_id():
@@ -15,23 +15,28 @@ def create_minion_id():
     return str(uuid.uuid1())
 
 
-def gen_keys(temp_dir):
+def gen_keys(temp_dir, minion_id):
     """
     Generate salt minion keys.
     """
     try:
-        import salt
+        from salt.crypt import gen_keys
+        key_dir = os.path.join(temp_dir, "salt", "key")
+        gen_keys(key_dir, minion_id, 4096)
     except ImportError:
         print "Preseeding minion keys requires a salt installation."
-    return False
-    
 
 
-def place_minion_pub(pub_file, minion_id):
+def place_minion_pub(temp_dir, minion_id):
     """
     Copies the minion public key file to the accepted minion directory.
     """
-    return False
+    pub_key_path = os.path.join(temp_dir, "salt", "key", "{0}.pub".format(minion_id))
+    dest = "/etc/salt/pki/minions/{0}".format(minion_id)
+    if os.path.isfile(pub_key_path):
+        shutil.copyfile(pub_key_path, dest)
+    else:
+        raise Exception("Minion pub key {0} not found.".format(pub_key_path))
 
 
 def build_vagrantfile(temp_dir):
@@ -41,18 +46,23 @@ def build_vagrantfile(temp_dir):
     return False
 
 
-def build_minion_config(temp_dir):
+def build_minion_config(temp_dir, master, minion_id):
     """
     Build a minion config file with given parameters.
     """
-    return False
+    minion_conf_path = os.path.join(temp_dir, "salt", "minion.conf")
+    minion_conf = open(minion_conf_path, 'w')
+    if master != None:
+        minion_conf.write("master: {0}\n\n".format(master))
+    minion_conf.write("id: {0}".format(minion_id))
+    minion_conf.close()
 
 
 def copy_salt_provisioner(temp_dir):
     """
     Copy salt_provisioner.rb to the bundle directory
     """
-    return False
+    provisioner_path = os.path.join(salty_vagrant.__path__[0], 'templates', 'temp_file')
 
 
 def archive(temp_dir):
@@ -96,8 +106,8 @@ def bundle(master=None,
     if preseed:
         if minion_id == None:
             minion_id = create_minion_id()
-        private, public = gen_keys(tempdir)
-        place_minion_pub(public, minion_id)
+        gen_keys(tempdir)
+        place_minion_pub(tempdir, minion_id)
     build_minion_config(tempdir, master, minion_id)
     copy_salt_provisioner(tempdir)
     build_vagrantfile(tempdir)

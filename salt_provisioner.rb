@@ -54,6 +54,16 @@ class SaltProvisioner < Vagrant::Provisioners::Base
     env[:vm].config.vm.share_folder("salt_pillar_root", config.salt_pillar_root_guest_path, @expanded_salt_pillar_root_path)
   end
 
+  def salt_exists
+    env[:ui].info "Checking for salt binaries..."
+    if env[:vm].channel.test("which salt-call") and
+       env[:vm].channel.test("which salt-minion")
+      return true
+    end
+    env[:ui].info "Salt binaries not found."
+    return false
+  end
+
   def add_salt_repo
     env[:ui].info "Adding Salt PPA."
     env[:vm].channel.sudo("apt-get -q -y install python-software-properties")
@@ -93,8 +103,10 @@ class SaltProvisioner < Vagrant::Provisioners::Base
   end
 
   def provision!
-    add_salt_repo
-    install_salt_minion
+    if !salt_exists
+      add_salt_repo
+      install_salt_minion
+    end
     upload_minion_config
     if config.minion_key
       upload_minion_keys

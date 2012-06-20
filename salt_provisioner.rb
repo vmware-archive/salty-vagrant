@@ -47,10 +47,12 @@ class SaltProvisioner < Vagrant::Provisioners::Base
   end
 
   def share_salt_file_root_path
+    env[:ui].info "Sharing file root folder."
     env[:vm].config.vm.share_folder("salt_file_root", config.salt_file_root_guest_path, @expanded_salt_file_root_path)
   end
 
   def share_salt_pillar_root_path
+    env[:ui].info "Sharing pillar root path."
     env[:vm].config.vm.share_folder("salt_pillar_root", config.salt_pillar_root_guest_path, @expanded_salt_pillar_root_path)
   end
 
@@ -83,6 +85,7 @@ class SaltProvisioner < Vagrant::Provisioners::Base
 
   def call_highstate
     env[:ui].info "Calling state.highstate"
+    env[:vm].channel.sudo("salt-call saltutil.sync_all")
     env[:vm].channel.sudo("salt-call state.highstate") do |type, data|
       env[:ui].info(data)
     end
@@ -103,6 +106,9 @@ class SaltProvisioner < Vagrant::Provisioners::Base
   end
 
   def provision!
+
+    verify_shared_folders([config.salt_file_root_guest_path, config.salt_pillar_root_guest_path])
+
     if !salt_exists
       add_salt_repo
       install_salt_minion
@@ -116,9 +122,10 @@ class SaltProvisioner < Vagrant::Provisioners::Base
 
   def verify_shared_folders(folders)
     folders.each do |folder|
-      @logger.debug("Checking for shared folder: #{folder}")
+      # @logger.debug("Checking for shared folder: #{folder}")
+      env[:ui].info "Checking shared folder #{folder}"
       if !env[:vm].channel.test("test -d #{folder}")
-        raise PuppetError, :missing_shared_folders
+        raise "Missing folder #{folder}"
       end
     end
   end

@@ -3,6 +3,8 @@ Salty Vagrant
 ==============
 Provision `Vagrant`_ boxes using `Saltstack`_.
 
+Discussion and questions happen in ``#salt`` on Freenode IRC. ping ``akoumjian``.
+
 .. _`Vagrant`: http://www.vagrantup.com/
 .. _`Saltstack`: http://saltstack.org/
 .. _`Salt`: http://saltstack.org/

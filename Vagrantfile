@@ -3,10 +3,10 @@ require './salt_provisioner.rb'
 Vagrant::Config.run do |config|
   config.vm.box = "precise64"
   ## Use all the defaults:
-  config.vm.provision SaltProvisioner
+  config.vm.provision SaltProvisioner do |salt|
+    salt.run_highstate = true
 
-  ## SaltProvisioner settings are set like this:
-  # config.vm.provision SaltProvisioner do |salt|
+    ## Optional Settings:
   	# salt.minion_config = "salt/minion.conf"
 
   	## Only Use these with a masterless setup to
@@ -19,5 +19,5 @@ Vagrant::Config.run do |config|
     # salt.master = true
     # salt.minion_key = "salt/key/testing.pem"
     # salt.minion_pub = "salt/key/testing.pub"
-  # end
+  end
 end

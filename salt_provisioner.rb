@@ -5,6 +5,7 @@ class SaltProvisioner < Vagrant::Provisioners::Base
     attr_accessor :minion_key
     attr_accessor :minion_pub
     attr_accessor :master
+    attr_accessor :run_highstate
     attr_accessor :salt_file_root_path
     attr_accessor :salt_file_root_guest_path
     attr_accessor :salt_pillar_root_path
@@ -15,6 +16,7 @@ class SaltProvisioner < Vagrant::Provisioners::Base
     def minion_key; @minion_key || false; end
     def minion_pub; @minion_pub || false; end
     def master; @master || false; end
+    def run_highstate; @run_highstate || false; end
     def salt_file_root_path; @salt_file_root_path || "salt/roots/salt"; end
     def salt_file_root_guest_path; @salt_file_root_guest_path || "/srv/salt"; end
     def salt_pillar_root_path; @salt_pillar_root_path || "salt/roots/pillar"; end
@@ -84,10 +86,14 @@ class SaltProvisioner < Vagrant::Provisioners::Base
   end
 
   def call_highstate
-    env[:ui].info "Calling state.highstate"
-    env[:vm].channel.sudo("salt-call saltutil.sync_all")
-    env[:vm].channel.sudo("salt-call state.highstate") do |type, data|
-      env[:ui].info(data)
+    if config.run_highstate
+      env[:ui].info "Calling state.highstate"
+      env[:vm].channel.sudo("salt-call saltutil.sync_all")
+      env[:vm].channel.sudo("salt-call state.highstate") do |type, data|
+        env[:ui].info(data)
+      end
+    else
+      env[:ui].info "run_highstate set to false. Not running state.highstate."
     end
   end
 
@@ -113,10 +119,13 @@ class SaltProvisioner < Vagrant::Provisioners::Base
       add_salt_repo
       install_salt_minion
     end
+
     upload_minion_config
+
     if config.minion_key
       upload_minion_keys
     end
+
     call_highstate
   end
 

@@ -34,11 +34,12 @@ Masterless (Quick Start)
 ========================
 
 1. Install `Vagrant`_
-2. Get the Ubuntu 12.04 base box: ``vagrant box add precise64 http://files.vagrantup.com/precise64.box``
-3. Download or clone this repository.
-4. Place your salt state tree in ``salt/roots/salt``
-5. Place your minion config in ``salt/minion`` [#file_client]_
-6. Run ``vagrant up`` and you should be good to go.
+2. Install `Salty Vagrant`_ (``gem install vagrant-salt``)
+3. Get the Ubuntu 12.04 base box: ``vagrant box add precise64 http://files.vagrantup.com/precise64.box``
+4. Create/Update your ``Vagrantfile`` (Detailed in `Configuration`_)
+5. Place your salt state tree in ``salt/roots/salt``
+6. Place your minion config in ``salt/minion`` [#file_client]_
+7. Run ``vagrant up`` and you should be good to go.
 
 .. [#file_client] Make sure your minion config sets ``file_client: local`` for masterless
 
@@ -71,7 +72,6 @@ something like this::
 
     myvagrant/
         Vagrantfile
-        salt_provisioner.rb
         salt/
             minion.conf
             key/
@@ -90,27 +90,38 @@ The are two required settings for your ``minion.conf`` file::
 Make sure you use the same ``[minion_id]`` that you used on the master or 
 it will not match with the key.
 
-Your ``Vagrantfile`` will need to contain three settings, and should look 
-roughly like this::
+Create/Update your ``Vagrantfile`` per the example provided in the `Configuration`_ section.
 
-    require './salt_provisioner.rb'
-
-    Vagrant::Config.run do |config|
-      config.vm.box = "precise64"
-
-      config.vm.provision SaltProvisioner do |salt|
-        salt.master = true
-        salt.minion_key = "salt/key/minion_id.pem"
-        salt.minion_pub = "salt/key/minion_id.pub"
-      end
-    end
-
-Now you should be able to run ``vagrant up`` and the salt should put your 
+Finally, you should be able to run ``vagrant up`` and the salt should put your 
 vagrant minion in state.highstate.
 
 
 Configuration
 ==============
+
+Your ``Vagrantfile`` should look roughly like this::
+
+    Vagrant::Config.run do |config|
+      config.vm.box = "precise64"
+      ## Use all the defaults:
+      config.vm.provision :salt do |salt|
+        salt.run_highstate = true
+
+        ## Optional Settings:
+        # salt.minion_config = "salt/minion.conf"
+
+        ## Only Use these with a masterless setup to
+        ## load your state tree:
+        # salt.salt_file_root_path = "salt/roots/salt"
+        # salt.salt_pillar_root_path = "salt/roots/pillar"
+
+        ## If you have a remote master setup, you can add
+        ## your preseeded minion key
+        # salt.master = true
+        # salt.minion_key = "salt/key/testing.pem"
+        # salt.minion_pub = "salt/key/testing.pub"
+      end
+    end
 
 Inside of your Vagrantfile, there are a few parameters you can assign 
 depending on whether you are running masterless or with a remote master.

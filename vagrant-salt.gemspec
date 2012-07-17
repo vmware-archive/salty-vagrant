@@ -5,7 +5,7 @@ Gem::Specification.new do |s|
   s.name        = "vagrant-salt"
   s.version     = "0.1"
   s.authors     = ["Alec Koumjian", "Kiall Mac Innes"]
-  s.email       = ["", "kiall@managedit.ie"]
+  s.email       = ["akoumjian@gmail.com", "kiall@managedit.ie"]
   s.homepage    = "https://github.com/akoumjian/salty-vagrant"
   s.summary     = %q{Vagrant Salt Stack provisioner plugin}
   s.description = %q{Vagrant Salt Stack provisioner plugin}

@@ -1,9 +1,9 @@
-require './salt_provisioner.rb'
+require "../lib/vagrant-salt"
 
 Vagrant::Config.run do |config|
   config.vm.box = "precise64"
   ## Use all the defaults:
-  config.vm.provision SaltProvisioner do |salt|
+  config.vm.provision :salt do |salt|
     salt.run_highstate = true
 
     ## Optional Settings:

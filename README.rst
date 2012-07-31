@@ -34,7 +34,7 @@ Masterless (Quick Start)
 ========================
 
 1. Install `Vagrant`_
-2. Install `Salty Vagrant`_ (``gem install vagrant-salt``)
+2. Install `Salty Vagrant`_ (``vagrant gem install vagrant-salt``)
 3. Get the Ubuntu 12.04 base box: ``vagrant box add precise64 http://files.vagrantup.com/precise64.box``
 4. Create/Update your ``Vagrantfile`` (Detailed in `Configuration`_)
 5. Place your salt state tree in ``salt/roots/salt``

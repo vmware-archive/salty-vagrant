@@ -69,6 +69,7 @@ module VagrantSalt
 
     def add_salt_repo
       env[:ui].info "Adding Salt PPA."
+      env[:vm].channel.sudo("apt-get update")
       env[:vm].channel.sudo("apt-get -q -y install python-software-properties")
       env[:vm].channel.sudo("add-apt-repository -y ppa:saltstack/salt")
       env[:vm].channel.sudo("apt-get -q -y update")

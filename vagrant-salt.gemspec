@@ -3,7 +3,7 @@ $:.push File.expand_path("../lib", __FILE__)
 
 Gem::Specification.new do |s|
   s.name        = "vagrant-salt"
-  s.version     = "0.1.1"
+  s.version     = "0.1.2"
   s.authors     = ["Alec Koumjian", "Kiall Mac Innes"]
   s.email       = ["akoumjian@gmail.com", "kiall@managedit.ie"]
   s.homepage    = "https://github.com/akoumjian/salty-vagrant"

@@ -68,7 +68,7 @@ module VagrantSalt
     end
 
     def add_salt_repo
-      env[:ui].info "Adding Salt PPA."
+      env[:ui].info "Adding salt repository."
       env[:vm].channel.sudo("apt-get update")
       env[:vm].channel.sudo("apt-get -q -y install python-software-properties")
       env[:vm].channel.sudo("add-apt-repository -y ppa:saltstack/salt")
@@ -76,7 +76,7 @@ module VagrantSalt
     end
 
     def install_salt_minion
-      env[:ui].info "Installing salt minion."
+      env[:ui].info "Installing salt binaries."
       env[:vm].channel.sudo("apt-get -q -y install salt-minion")
     end
 
@@ -113,7 +113,9 @@ module VagrantSalt
 
     def provision!
 
-      verify_shared_folders([config.salt_file_root_guest_path, config.salt_pillar_root_guest_path])
+      if !config.master
+        verify_shared_folders([config.salt_file_root_guest_path, config.salt_pillar_root_guest_path])
+      end
 
       if !salt_exists
         add_salt_repo

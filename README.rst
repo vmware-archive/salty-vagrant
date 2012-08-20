@@ -152,3 +152,18 @@ salt_pillar_root_guest_path : "/srv/pillar"
     Path on VM where pillar tree will be shared. Only use with ``master=true``
 
 
+Installation Notes
+==================
+Ubuntu & Debian
+------
+
+Users have reported that vagrant plugins do not work with the debian packaged vagrant
+(such as Ubuntu repository). Installing vagrant with gem should work.
+
+1. ``sudo apt-get remove vagrant``
+2. ``sudo gem install vagrant``
+3. ``vagrant gem install vagrant-salt``
+
+That should get you up and running.
+
+

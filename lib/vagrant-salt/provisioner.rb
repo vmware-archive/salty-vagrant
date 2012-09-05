@@ -37,6 +37,8 @@ module VagrantSalt
         env[:ui].info "Adding state tree folders."
         @expanded_salt_file_root_path = config.expanded_path(env[:root_path], config.salt_file_root_path)
         @expanded_salt_pillar_root_path = config.expanded_path(env[:root_path], config.salt_pillar_root_path)
+        check_salt_file_root_path
+        check_salt_pillar_root_path
         share_salt_file_root_path
         share_salt_pillar_root_path
       end
@@ -44,6 +46,18 @@ module VagrantSalt
       if config.minion_key
         @expanded_minion_key_path = config.expanded_path(env[:root_path], config.minion_key)
         @expanded_minion_pub_path = config.expanded_path(env[:root_path], config.minion_pub)
+      end
+    end
+
+    def check_salt_file_root_path
+      if !File.directory?(@expanded_salt_file_root_path)
+        raise "Salt file root path does not exist: #{@expanded_salt_file_root_path}"
+      end
+    end
+
+    def check_salt_pillar_root_path
+      if !File.directory?(@expanded_salt_pillar_root_path)
+        raise "Salt pillar root path does not exist: #{@expanded_salt_pillar_root_path}"
       end
     end
 

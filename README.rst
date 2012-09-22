@@ -139,6 +139,9 @@ master : false
     Boolean whether or not you want to use a remote master. If set to false,
     make sure your minion config file has ``file_client: local`` set.
 
+salt_dev_version : false
+    Boolean. When set to ``true``, the latest development version of Salt will be installed to the box. When ``false``, it will use an existing version of Salt or download salt-minion from the PPA.
+
 salt_file_root_path : "salt/roots/salt"
     String path to your salt state tree. Only useful with ``master=false``.
 

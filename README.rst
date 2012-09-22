@@ -17,7 +17,7 @@ Just like Chef or Puppet, Salt can be used as a provisioning tool.
 file to automatically build your dev environment the same way you use salt 
 to deploy for other environments.
 
-.. _`Salty Vagrant`: https://github.com/akoumjian/salty-vagrant
+.. _`Salty Vagrant`: https://github.com/saltstack/salty-vagrant
 
 There are two different ways to use `Salty Vagrant`_. The simplest way uses 
 the salt minion in a masterless configuration. With this option you distribute 

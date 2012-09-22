@@ -6,6 +6,7 @@ module VagrantSalt
       attr_accessor :minion_pub
       attr_accessor :master
       attr_accessor :run_highstate
+      attr_accessor :salt_dev_version
       attr_accessor :salt_file_root_path
       attr_accessor :salt_file_root_guest_path
       attr_accessor :salt_pillar_root_path
@@ -16,6 +17,7 @@ module VagrantSalt
       def minion_pub; @minion_pub || false; end
       def master; @master || false; end
       def run_highstate; @run_highstate || false; end
+      def salt_dev_version; @salt_dev_version || false; end
       def salt_file_root_path; @salt_file_root_path || "salt/roots/salt"; end
       def salt_file_root_guest_path; @salt_file_root_guest_path || "/srv/salt"; end
       def salt_pillar_root_path; @salt_pillar_root_path || "salt/roots/pillar"; end
@@ -94,6 +96,14 @@ module VagrantSalt
       env[:vm].channel.sudo("apt-get -q -y install salt-minion")
     end
 
+    def install_salt_dev
+      env[:ui].info "Installing salt development version."
+      env[:vm].channel.sudo("apt-get update")
+      env[:vm].channel.sudo("apt-get install -q -y python-setuptools python-m2crypto python-crypto python-yaml msgpack-python python-zmq")
+      env[:vm].channel.sudo("easy_install https://github.com/saltstack/salt/tarball/develop")
+      env[:vm].channel.sudo("mkdir -p /etc/salt")
+    end
+
     def accept_minion_key
       env[:ui].info "Accepting minion key."
       env[:vm].channel.sudo("salt-key -A")
@@ -129,6 +139,10 @@ module VagrantSalt
 
       if !config.master
         verify_shared_folders([config.salt_file_root_guest_path, config.salt_pillar_root_guest_path])
+      end
+
+      if config.salt_dev_version
+        install_salt_dev
       end
 
       if !salt_exists

@@ -97,7 +97,7 @@ vagrant minion in state.highstate.
 
 
 Configuration
-==============
+=============
 
 Your ``Vagrantfile`` should look roughly like this::
 
@@ -151,11 +151,41 @@ salt_pillar_root_path : "salt/roots/pillar"
 salt_pillar_root_guest_path : "/srv/pillar"
     Path on VM where pillar tree will be shared. Only use with ``master=true``
 
+Bootstrapping Salt
+==================
+
+Before `Salt`_ can be used for provisioning on the target virtual box, the binaries need to be installed. Since `Vagrant`_ and `Salt`_ support many different distributions and versions of operating systems, the `Salt`_ installation process is handled by the shell script ``scripts/bootstrap-salt-minion.sh``. This script runs through a series of checks to determine operating system type and version to then install the `Salt`_ binaries using the appropriate methods.
+
+Adding support for other operating systems
+------------------------------------------
+
+Below is an example for targeting an installation for Debian Squeeze which first checks for the ``/etc/debian_version`` file and then determines the version using ``cat /etc/debian_version``::
+
+    (...)
+    elif [ -f /etc/debian_version ] ; then
+        DVER=$(cat /etc/debian_version)
+        if [ $DVER = '6.0'  ]; then
+            log "Installing for Debian Squeeze."
+            do_with_root echo "deb http://backports.debian.org/debian-backports squeeze-backports main" >> /etc/apt/sources.list.d/backports.list
+            do_with_root apt-get update
+            do_with_root apt-get -t squeeze-backports -y install salt-minion
+        else
+            log "Debian version $VER not supported."
+            exit 1
+        fi
+    (...)
+
+The bootstrapping script must be plain POSIX sh only, **not** bash or another shell script. By design the targeting for each operating system and version is very specific. Assumptions of supported versions or variants should not be made, to avoid failed or broken installations.
+
+Supported Operating Systems
+---------------------------
+- Ubuntu 10.x/11.x/12.x
+- Debian 6.x
 
 Installation Notes
 ==================
 Ubuntu & Debian
-------
+---------------
 
 Users have reported that vagrant plugins do not work with the debian packaged vagrant
 (such as Ubuntu repository). Installing vagrant with gem should work.
@@ -166,4 +196,11 @@ Users have reported that vagrant plugins do not work with the debian packaged va
 
 That should get you up and running.
 
+Installing from source
+----------------------
 
+1. ``wget https://github.com/saltstack/salty-vagrant/tarball/master -O salty-vagrant.tar.gz``
+2. ``tar zxf salty-vagrant.tar.gz``
+3. ``cd saltstack-salty-vagrant-[hash]``
+4. ``gem build vagrant-salt.gemspec``
+5. ``vagrant gem install vagrant-salt-[version].gem``

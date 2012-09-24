@@ -81,17 +81,15 @@ module VagrantSalt
       return false
     end
 
-    def add_salt_repo
-      env[:ui].info "Adding salt repository."
-      env[:vm].channel.sudo("apt-get update")
-      env[:vm].channel.sudo("apt-get -q -y install python-software-properties")
-      env[:vm].channel.sudo("add-apt-repository -y ppa:saltstack/salt")
-      env[:vm].channel.sudo("apt-get -q -y update")
-    end
-
-    def install_salt_minion
-      env[:ui].info "Installing salt binaries."
-      env[:vm].channel.sudo("apt-get -q -y install salt-minion")
+    def bootstrap_salt_minion
+      env[:ui].info "Bootstrapping salt-minion on VM..."
+      @expanded_bootstrap_script_path = config.expanded_path(__FILE__, "../../../scripts/bootstrap-salt-minion.sh")
+      env[:vm].channel.upload(@expanded_bootstrap_script_path.to_s, "/tmp/bootstrap-salt-minion.sh")
+      env[:vm].channel.sudo("chmod +x /tmp/bootstrap-salt-minion.sh")
+      if !env[:vm].channel.sudo("/tmp/bootstrap-salt-minion.sh")
+        raise "Failed to bootstrap salt-minion on VM, see /var/log/bootstrap-salt-minion.log on VM."
+      end
+      env[:ui].info "Salt binaries installed on VM."
     end
 
     def accept_minion_key
@@ -132,8 +130,7 @@ module VagrantSalt
       end
 
       if !salt_exists
-        add_salt_repo
-        install_salt_minion
+        bootstrap_salt_minion
       end
 
       upload_minion_config

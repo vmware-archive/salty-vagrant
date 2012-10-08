@@ -1,4 +1,24 @@
-#!/bin/bash
+#!/bin/sh
+
+# Setup logging
+if [ "$SELF_LOGGING" != "1" ]
+then
+    PIPE=tmp.fifo
+    mkfifo $PIPE
+
+    # Keep PID of this process
+    SELF_LOGGING=1 sh $0 $* >$PIPE &
+    PID=$!
+
+    tee /var/log/bootstrap-salt-minion.log <$PIPE &
+
+    # Safe to rm pipe because the child processes have references to it
+    rm $PIPE    
+    wait $PID
+
+    # Return same error code as original process
+    exit $?
+fi
 
 usage()
 {
@@ -31,14 +51,10 @@ do
      esac
 done
 
-# Clear and then log all stdout and sterr to $LOGFILE
->/var/log/bootstrap-salt-minion.log 
-exec >  >(tee -a /var/log/bootstrap-salt-minion.log )
-exec 2> >(tee -a /var/log/bootstrap-salt-minion.log  >&2)
 
 UNAME=`uname`
 if [ "$UNAME" != "Linux" ] ; then
-    echo "Sorry, this OS is not supported."
+    echo "Sorry, OS $UNAME is not supported."
     exit 1
 fi
 
@@ -119,18 +135,45 @@ if [ "$UNAME" = "Linux" ] ; then
         fi
 
     elif [ $OS = 'Fedora' ] ; then
-        echo "Installing for $OS $CODENAME"
-        yum install -y salt-minion
+        if [ $DEVELOP = 1 ]; then
+            yum install -y salt-minion git
+            echo 'Installed Salt'
+            rm -rf /usr/lib/python/site-packages/salt*
+            rm -rf /usr/bin/salt-*
+            mkdir -p /root/git
+            cd /root/git
+            git clone git://github.com/saltstack/salt.git
+            cd salt
+            python setup.py install
+        else
+            echo "Installing for $OS $CODENAME"
+            yum install -y salt-minion
+        fi
 
     elif [ $OS = 'Redhat' ] ; then
-        echo "Installing for Redhat/CentOS"
-        echo "(this could take a while)"
-        rpm -Uvh --force http://mirrors.kernel.org/fedora-epel/6/x86_64/epel-release-6-7.noarch.rpm
-        yum update -y
-        yum -y install salt-minion --enablerepo=epel-testing
+        if [ $DEVELOP = 1]; then
+            rpm -Uvh --force http://mirrors.kernel.org/fedora-epel/6/x86_64/epel-release-6-7.noarch.rpm
+            yum -y install salt-minion git --enablerepo epel-testing
+            rm -rf /usr/lib/python/site-packages/salt*
+            rm -rf /usr/bin/salt-*
+            mkdir -p /root/git
+            cd /root/git
+            git clone git://github.com/saltstack/salt.git
+            cd salt
+            python setup.py install
+        else
+            echo "Installing for Redhat/CentOS"
+            rpm -Uvh --force http://mirrors.kernel.org/fedora-epel/6/x86_64/epel-release-6-7.noarch.rpm
+            yum update -y
+            yum -y install salt-minion --enablerepo=epel-testing
+        fi
+    elif [ $OS = 'Arch' ] ; then
+        echo '[salt]
+        Server = http://red45.org/archlinux
+        ' >> /etc/pacman.conf
+        pacman -Syu --noconfirm salt
     else
-        echo "Unable to install. Bootstap script does not yet support $OS $CODENAME"
-
+        echo "Unable to install. Salt bootstrap does not yet support $OS $CODENAME"
         exit 1
     fi
 

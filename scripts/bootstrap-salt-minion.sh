@@ -70,15 +70,18 @@ if [ "$UNAME" = "Linux" ] ; then
         fi
     elif [ -f /etc/debian_version ] ; then
         DVER=$(cat /etc/debian_version)
-        if [ $DVER = '6.0'  ]; then
-            log "Installing for Debian Squeeze."
-            do_with_root echo "deb http://backports.debian.org/debian-backports squeeze-backports main" >> /etc/apt/sources.list.d/backports.list
-            do_with_root apt-get update
-            do_with_root apt-get -t squeeze-backports -y install salt-minion
-        else
-            log "Debian version $VER not supported."
-            exit 1
-        fi
+        case "$DVER" in
+            6.0*)
+                log "Installing for Debian Squeeze."
+                do_with_root echo "deb http://backports.debian.org/debian-backports squeeze-backports main" >> /etc/apt/sources.list.d/backports.list
+                do_with_root apt-get update
+                do_with_root apt-get -t squeeze-backports -y install salt-minion
+                ;;
+            *)
+                log "Debian version $VER not supported."
+                exit 1
+                ;;
+        esac
     elif [ -f /etc/redhat-release ] ; then
         OS=$(cat /etc/redhat-release)
         CODENAME=$(cat /etc/redhat-release)

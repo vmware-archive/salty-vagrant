@@ -1,4 +1,4 @@
 require "vagrant"
-require "vagrant-salt/provisioner"
+require_relative "vagrant-salt/provisioner"
 
 Vagrant.provisioners.register(:salt) { VagrantSalt::Provisioner }

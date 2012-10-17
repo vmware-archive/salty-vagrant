@@ -1,8 +1,7 @@
 #!/bin/sh
 
 # Setup logging
-if [ "$SELF_LOGGING" != "1" ]
-then
+if [ "$SELF_LOGGING" != "1" ] ; then
     PIPE=tmp.fifo
     mkfifo $PIPE
 
@@ -77,6 +76,9 @@ if [ "$UNAME" = "Linux" ] ; then
     elif [ -f /etc/redhat-release ] ; then
         OS="Redhat"
         CODENAME=$(cat /etc/redhat-release)
+    elif [ -f /etc/arch-release ] ; then
+        OS="Arch"
+        CODENAME=$(cat /etc/arch-release)
     else
         echo "Unable to install. Could not detect distribution."
         exit 1
@@ -151,7 +153,7 @@ if [ "$UNAME" = "Linux" ] ; then
         fi
 
     elif [ $OS = 'Redhat' ] ; then
-        if [ $DEVELOP = 1]; then
+        if [ $DEVELOP = 1 ] ; then
             rpm -Uvh --force http://mirrors.kernel.org/fedora-epel/6/x86_64/epel-release-6-7.noarch.rpm
             yum -y install salt-minion git --enablerepo epel-testing
             rm -rf /usr/lib/python/site-packages/salt*

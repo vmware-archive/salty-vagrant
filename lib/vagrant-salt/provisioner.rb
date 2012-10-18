@@ -86,7 +86,14 @@ module VagrantSalt
       @expanded_bootstrap_script_path = config.expanded_path(__FILE__, "../../../scripts/bootstrap-salt-minion.sh")
       env[:vm].channel.upload(@expanded_bootstrap_script_path.to_s, "/tmp/bootstrap-salt-minion.sh")
       env[:vm].channel.sudo("chmod +x /tmp/bootstrap-salt-minion.sh")
-      if !env[:vm].channel.sudo("/tmp/bootstrap-salt-minion.sh")
+      bootstrap = env[:vm].channel.sudo("/tmp/bootstrap-salt-minion.sh") do |type, data|
+        if data[0] == "\n"
+            # Remove any leading newline but not whitespace, for that one would use data.lstrip
+            data = data[1..-1]
+        end
+        env[:ui].info(data.rstrip)
+      end
+      if !bootstrap
         raise "Failed to bootstrap salt-minion on VM, see /var/log/bootstrap-salt-minion.log on VM."
       end
       env[:ui].info "Salt binaries installed on VM."

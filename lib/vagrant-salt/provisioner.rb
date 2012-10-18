@@ -10,6 +10,7 @@ module VagrantSalt
       attr_accessor :salt_file_root_guest_path
       attr_accessor :salt_pillar_root_path
       attr_accessor :salt_pillar_root_guest_path
+      attr_accessor :install_develop_version
 
       def minion_config; @minion_config || "salt/minion.conf"; end
       def minion_key; @minion_key || false; end
@@ -20,6 +21,13 @@ module VagrantSalt
       def salt_file_root_guest_path; @salt_file_root_guest_path || "/srv/salt"; end
       def salt_pillar_root_path; @salt_pillar_root_path || "salt/roots/pillar"; end
       def salt_pillar_root_guest_path; @salt_pillar_root_guest_path || "/srv/pillar"; end
+      def install_develop_version
+        if @install_develop_version
+          ' -d'
+        else
+          ''
+        end 
+      end
 
       def expanded_path(root_path, rel_path)
         Pathname.new(rel_path).expand_path(root_path)
@@ -86,7 +94,7 @@ module VagrantSalt
       @expanded_bootstrap_script_path = config.expanded_path(__FILE__, "../../../scripts/bootstrap-salt-minion.sh")
       env[:vm].channel.upload(@expanded_bootstrap_script_path.to_s, "/tmp/bootstrap-salt-minion.sh")
       env[:vm].channel.sudo("chmod +x /tmp/bootstrap-salt-minion.sh")
-      env[:vm].channel.sudo("/tmp/bootstrap-salt-minion.sh") do |type, data|
+      env[:vm].channel.sudo("/tmp/bootstrap-salt-minion.sh" + config.install_develop_version) do |type, data|
         env[:ui].info(data)
       end
       env[:ui].info "Salt binaries installed on VM."

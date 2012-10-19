@@ -37,6 +37,7 @@ usage() {
   Options:
   -h|help       Display this message
   -v|version    Display script version
+  -t|treeish    Set git treeish to checkout for installation type git
 EOT
 }   # ----------  end of function usage  ----------
 
@@ -44,13 +45,17 @@ EOT
 #  Handle command line arguments
 #-----------------------------------------------------------------------
 
-while getopts ":hvN" opt
+GIT_TREEISH=''
+
+while getopts ":hvt:N" opt
 do
   case $opt in
 
     h|help     )  usage; exit 0   ;;
 
     v|version  )  echo "$0 -- Version $ScriptVersion"; exit 0   ;;
+
+    t|treeish  )  GIT_TREEISH="$OPTARG"   ;;
 
     \? )  echo "\n  Option does not exist : $OPTARG\n"
           usage; exit 1   ;;
@@ -130,7 +135,7 @@ __gather_linux_system_info() {
         v=$(
             (grep VERSION /etc/${rsource}; cat /etc/${rsource}) | grep '[0-9]' | sed -e 'q' |\
             sed -e 's/^/#/' \
-                -e 's/^#[^0-9]*\([0-9][0-9]*\.[0-9][0-9]*\)\(\.[0-9][0-9]*\).*$/\1[\2]/' \
+                -e 's/^#[^0-9]*\([0-9][0-9]*\.[0-9][0-9]*\)\(\.[0-9][0-9]*\).*$/\1/' \
                 -e 's/^#[^0-9]*\([0-9][0-9]*\.[0-9][0-9]*\).*$/\1/' \
                 -e 's/^#[^0-9]*\([0-9][0-9]*\).*$/\1/' \
                 -e 's/^#.*$//'
@@ -341,6 +346,33 @@ install_debian_60_stable_deps() {
 
 install_debian_60_stable() {
     apt-get -t squeeze-backports -y install salt-minion
+}
+
+install_debian_60_git_deps() {
+    install_debian_60_stable_deps
+    install_debian_60_stable
+}
+
+install_debian_60_git() {
+    apt-get -y install git
+    apt-get -y purge salt-minion
+
+    rm -rf /tmp/git/salt
+    mkdir /tmp/git
+    cd /tmp/git
+    git clone git://github.com/saltstack/salt.git salt
+    cd salt
+
+    if [ "x${GIT_TREEISH}" = "x" ]; then
+        git checkout master
+    else
+        git checkout $GIT_TREEISH
+    fi
+
+    python setup.py install --install-layout=deb
+    mkdir -p /etc/salt
+    cp conf/minion.template /etc/salt/minion
+    rm -rf /tmp/git/salt
 }
 #
 #   Ended Debian Install Functions

@@ -6,8 +6,10 @@ Vagrant::Config.run do |config|
   config.vm.provision :salt do |salt|
     salt.run_highstate = true
 
+
     ## Optional Settings:
-  	# salt.minion_config = "salt/minion.conf"
+    # salt.minion_config = "salt/minion.conf"
+    # salt.salt_install_type = "daily"
 
   	## Only Use these with a masterless setup to
   	## load your state tree:

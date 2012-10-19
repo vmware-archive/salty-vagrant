@@ -10,6 +10,8 @@ module VagrantSalt
       attr_accessor :salt_file_root_guest_path
       attr_accessor :salt_pillar_root_path
       attr_accessor :salt_pillar_root_guest_path
+      attr_accessor :salt_install_type
+      attr_accessor :salt_install_args
 
       def minion_config; @minion_config || "salt/minion.conf"; end
       def minion_key; @minion_key || false; end
@@ -20,9 +22,16 @@ module VagrantSalt
       def salt_file_root_guest_path; @salt_file_root_guest_path || "/srv/salt"; end
       def salt_pillar_root_path; @salt_pillar_root_path || "salt/roots/pillar"; end
       def salt_pillar_root_guest_path; @salt_pillar_root_guest_path || "/srv/pillar"; end
+      def salt_install_type; @salt_install_type || ''; end
+      def salt_install_args; @salt_install_args || ''; end
+
 
       def expanded_path(root_path, rel_path)
         Pathname.new(rel_path).expand_path(root_path)
+      end
+
+      def bootstrap_options
+        '%s %s' % [salt_install_type, salt_install_args]
       end
     end
 
@@ -86,7 +95,7 @@ module VagrantSalt
       @expanded_bootstrap_script_path = config.expanded_path(__FILE__, "../../../scripts/bootstrap-salt-minion.sh")
       env[:vm].channel.upload(@expanded_bootstrap_script_path.to_s, "/tmp/bootstrap-salt-minion.sh")
       env[:vm].channel.sudo("chmod +x /tmp/bootstrap-salt-minion.sh")
-      bootstrap = env[:vm].channel.sudo("/tmp/bootstrap-salt-minion.sh") do |type, data|
+      bootstrap = env[:vm].channel.sudo("/tmp/bootstrap-salt-minion.sh %s" % config.bootstrap_options) do |type, data|
         if data[0] == "\n"
             # Remove any leading newline but not whitespace, for that one would use data.lstrip
             data = data[1..-1]

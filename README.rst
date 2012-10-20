@@ -109,6 +109,8 @@ Your ``Vagrantfile`` should look roughly like this::
 
         ## Optional Settings:
         # salt.minion_config = "salt/minion.conf"
+        # salt.salt_install_type = "git"
+        # salt.salt_install_args = "develop"
 
         ## Only Use these with a masterless setup to
         ## load your state tree:
@@ -139,6 +141,14 @@ master : false
     Boolean whether or not you want to use a remote master. If set to false,
     make sure your minion config file has ``file_client: local`` set.
 
+salt_install_type : "stable" : "daily" : "git"
+    Whether to install from a distribution's stable package manager, a
+    daily ppa, or git treeish.
+
+salt_install_args : ""
+    When performing a git install, you can specify a branch, tag, or 
+    any treeish.
+
 salt_file_root_path : "salt/roots/salt"
     String path to your salt state tree. Only useful with ``master=false``.
 
@@ -158,22 +168,44 @@ Before `Salt`_ can be used for provisioning on the target virtual box, the binar
 
 Adding support for other operating systems
 ------------------------------------------
+In order to install salt for a distribution you need to define:
 
-Below is an example for targeting an installation for Debian Squeeze which first checks for the ``/etc/debian_version`` file and then determines the version using ``cat /etc/debian_version``::
+   To Install Dependencies, which is required, one of:
+       1. install_<distro>_<distro_version>_<install_type>_deps
+       2. install_<distro>_<distro_version>_deps
+       3. install_<distro>_<install_type>_deps
+       4. install_<distro>_deps
 
-    (...)
-    elif [ -f /etc/debian_version ] ; then
-        DVER=$(cat /etc/debian_version)
-        if [ $DVER = '6.0'  ]; then
-            log "Installing for Debian Squeeze."
-            do_with_root echo "deb http://backports.debian.org/debian-backports squeeze-backports main" >> /etc/apt/sources.list.d/backports.list
-            do_with_root apt-get update
-            do_with_root apt-get -t squeeze-backports -y install salt-minion
-        else
-            log "Debian version $VER not supported."
-            exit 1
-        fi
-    (...)
+
+   To install salt, which, of course, is required, one of:
+       1. install_<distro>_<distro_version>_<install_type>
+       2. install_<distro>_<install_type>
+
+
+   And optionally, define a post install function, one of:
+       1. install_<distro>_<distro_versions>_<install_type>_post
+       2. install_<distro>_<distro_versions>_post
+       3. install_<distro>_<install_type>_post
+       4. install_<distro>_post
+
+Below is an example for Ubuntu Oneiric:
+
+    install_ubuntu_1110_deps() {
+        apt-get update
+        apt-get -y install python-software-properties
+        add-apt-repository -y 'deb http://us.archive.ubuntu.com/ubuntu/ oneiric universe'
+        add-apt-repository -y ppa:saltstack/salt
+    }
+
+    install_ubuntu_1110_post() {
+        add-apt-repository -y --remove 'deb http://us.archive.ubuntu.com/ubuntu/ oneiric universe'
+    }
+
+    install_ubuntu_stable() {
+        apt-get -y install salt-minion
+    }
+
+Since there is no ``install_ubuntu_1110_stable()`` it defaults to the unspecified version script.
 
 The bootstrapping script must be plain POSIX sh only, **not** bash or another shell script. By design the targeting for each operating system and version is very specific. Assumptions of supported versions or variants should not be made, to avoid failed or broken installations.
 

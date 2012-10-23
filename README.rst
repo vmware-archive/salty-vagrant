@@ -161,10 +161,26 @@ salt_pillar_root_path : "salt/roots/pillar"
 salt_pillar_root_guest_path : "/srv/pillar"
     Path on VM where pillar tree will be shared. Only use with ``master=true``
 
+salt_nfs_shared_folders: true or false
+    Some vagrant machines do not support shared folders, for example, FreeBSD.
+    So, if you're running salty vagrant using a masterless setup, using an NFS 
+    share might be your only option. This option tries to make salty work with 
+    NFS. For more info, please check the Vagrant documentation regarding `NFS 
+    Shares`_.
+
+.. _NFS Shares: http://vagrantup.com/v1/docs/nfs.html
+
+
 Bootstrapping Salt
 ==================
 
-Before `Salt`_ can be used for provisioning on the target virtual box, the binaries need to be installed. Since `Vagrant`_ and `Salt`_ support many different distributions and versions of operating systems, the `Salt`_ installation process is handled by the shell script ``scripts/bootstrap-salt-minion.sh``. This script runs through a series of checks to determine operating system type and version to then install the `Salt`_ binaries using the appropriate methods.
+Before `Salt`_ can be used for provisioning on the target virtual box, the 
+binaries need to be installed. Since `Vagrant`_ and `Salt`_ support many 
+different distributions and versions of operating systems, the `Salt`_ 
+installation process is handled by the shell script 
+``scripts/bootstrap-salt-minion.sh``. This script runs through a series of 
+checks to determine operating system type and version to then install the 
+`Salt`_ binaries using the appropriate methods.
 
 Adding support for other operating systems
 ------------------------------------------
@@ -205,14 +221,19 @@ Below is an example for Ubuntu Oneiric:
         apt-get -y install salt-minion
     }
 
-Since there is no ``install_ubuntu_1110_stable()`` it defaults to the unspecified version script.
+Since there is no ``install_ubuntu_1110_stable()`` it defaults to the 
+unspecified version script.
 
-The bootstrapping script must be plain POSIX sh only, **not** bash or another shell script. By design the targeting for each operating system and version is very specific. Assumptions of supported versions or variants should not be made, to avoid failed or broken installations.
+The bootstrapping script must be plain POSIX sh only, **not** bash or another 
+shell script. By design the targeting for each operating system and version is 
+very specific. Assumptions of supported versions or variants should not be 
+made, to avoid failed or broken installations.
 
 Supported Operating Systems
 ---------------------------
 - Ubuntu 10.x/11.x/12.x
 - Debian 6.x
+- CentOS 6.3
 
 Installation Notes
 ==================
@@ -236,3 +257,5 @@ Installing from source
 3. ``cd saltstack-salty-vagrant-[hash]``
 4. ``gem build vagrant-salt.gemspec``
 5. ``vagrant gem install vagrant-salt-[version].gem``
+
+.. vim: fenc=utf-8 spell spl=en cc=80 tw=79 fo=want sts=2 sw=2 et

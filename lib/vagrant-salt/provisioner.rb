@@ -6,6 +6,7 @@ module VagrantSalt
       attr_accessor :minion_pub
       attr_accessor :master
       attr_accessor :run_highstate
+      attr_accessor :salt_nfs_shared_folders
       attr_accessor :salt_file_root_path
       attr_accessor :salt_file_root_guest_path
       attr_accessor :salt_pillar_root_path
@@ -18,6 +19,7 @@ module VagrantSalt
       def minion_pub; @minion_pub || false; end
       def master; @master || false; end
       def run_highstate; @run_highstate || false; end
+      def salt_nfs_shared_folders; @salt_nfs_shared_folders || false; end
       def salt_file_root_path; @salt_file_root_path || "salt/roots/salt"; end
       def salt_file_root_guest_path; @salt_file_root_guest_path || "/srv/salt"; end
       def salt_pillar_root_path; @salt_pillar_root_path || "salt/roots/pillar"; end
@@ -72,12 +74,22 @@ module VagrantSalt
 
     def share_salt_file_root_path
       env[:ui].info "Sharing file root folder."
-      env[:vm].config.vm.share_folder("salt_file_root", config.salt_file_root_guest_path, @expanded_salt_file_root_path)
+      env[:vm].config.vm.share_folder(
+        "salt_file_root",
+        config.salt_file_root_guest_path,
+        @expanded_salt_file_root_path,
+        :nfs => config.salt_nfs_shared_folders
+      )
     end
 
     def share_salt_pillar_root_path
       env[:ui].info "Sharing pillar root path."
-      env[:vm].config.vm.share_folder("salt_pillar_root", config.salt_pillar_root_guest_path, @expanded_salt_pillar_root_path)
+      env[:vm].config.vm.share_folder(
+        "salt_pillar_root",
+        config.salt_pillar_root_guest_path,
+        @expanded_salt_pillar_root_path,
+        :nfs => config.salt_nfs_shared_folders
+      )
     end
 
     def salt_exists
@@ -97,8 +109,9 @@ module VagrantSalt
       env[:vm].channel.sudo("chmod +x /tmp/bootstrap-salt-minion.sh")
       bootstrap = env[:vm].channel.sudo("/tmp/bootstrap-salt-minion.sh %s" % config.bootstrap_options) do |type, data|
         if data[0] == "\n"
-            # Remove any leading newline but not whitespace, for that one would use data.lstrip
-            data = data[1..-1]
+          # Remove any leading newline but not whitespace. If we wanted to
+          # remove newlines and whitespace we would have used data.lstrip
+          data = data[1..-1]
         end
         env[:ui].info(data.rstrip)
       end
@@ -149,6 +162,19 @@ module VagrantSalt
         bootstrap_salt_minion
       end
 
+      if !config.master
+        begin
+          env[:vm].channel.sudo("mount|grep salt_")
+        rescue
+          env[:ui].warn(
+            'Failed to mount the salt shares! Does the vagrant machine have ' \
+            'Shared Folders support? If you have an NFS server around you '   \
+            'can try setting "salt.salt_nfs_shared_folders = true" and use '  \
+            '":nfs => true" on any shares you\'re trying to mount yourself.'
+          )
+        end
+      end
+
       upload_minion_config
 
       if config.minion_key
@@ -169,3 +195,5 @@ module VagrantSalt
     end
   end
 end
+
+# vim: fenc=utf-8 spell spl=en cc=80 sts=2 sw=2 et

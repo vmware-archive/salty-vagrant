@@ -141,18 +141,24 @@ module VagrantSalt
     def upload_minion_config
       env[:ui].info "Copying salt minion config to vm."
       env[:vm].channel.upload(@expanded_minion_config_path.to_s, "/tmp/minion")
-      env[:vm].channel.sudo("mv /tmp/minion /etc/salt/minion")
+      env[:vm].channel.sudo("mkdir -p /etc/salt &> /dev/null; mv /tmp/minion /etc/salt/minion")
     end
 
     def upload_minion_keys
       env[:ui].info "Uploading minion key."
       env[:vm].channel.upload(@expanded_minion_key_path.to_s, "/tmp/minion.pem")
-      env[:vm].channel.sudo("mv /tmp/minion.pem /etc/salt/pki/minion.pem")
+      env[:vm].channel.sudo("mkdir -p /etc/salt/pki &> /dev/null; mv /tmp/minion.pem /etc/salt/pki/minion.pem")
       env[:vm].channel.upload(@expanded_minion_pub_path.to_s, "/tmp/minion.pub")
       env[:vm].channel.sudo("mv /tmp/minion.pub /etc/salt/pki/minion.pub")
     end
 
     def provision!
+
+      upload_minion_config
+
+      if config.minion_key
+        upload_minion_keys
+      end
 
       if !config.master
         verify_shared_folders([config.salt_file_root_guest_path, config.salt_pillar_root_guest_path])
@@ -174,13 +180,6 @@ module VagrantSalt
           )
         end
       end
-
-      upload_minion_config
-
-      if config.minion_key
-        upload_minion_keys
-      end
-
       call_highstate
     end
 

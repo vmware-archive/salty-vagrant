@@ -4,8 +4,8 @@ Vagrant::Config.run do |config|
   config.vm.box = "precise64"
   ## Use all the defaults:
   config.vm.provision :salt do |salt|
-    salt.run_highstate = true
-
+    salt.run_highstate = false
+    master = true
 
     ## Optional Settings:
     # salt.minion_config = "salt/minion.conf"

@@ -23,10 +23,11 @@ module VagrantSalt
       end
 
       def bootstrap_options
-        options = '%s %s' % [salt_install_type, salt_install_args]
+        options = ''
         if temp_config_dir
           options = options + '-c %s' % temp_config_dir
         end
+        options = options + ' %s %s' % [salt_install_type, salt_install_args]
         return options
       end
     end

@@ -45,20 +45,23 @@ usage() {
   Options:
   -h|help       Display this message
   -v|version    Display script version
+  -c|config-dir Temporary minion configuration directory
 EOT
 }   # ----------  end of function usage  ----------
 
 #-----------------------------------------------------------------------
 #  Handle command line arguments
 #-----------------------------------------------------------------------
+TEMP_CONFIG_DIR="null"
 
-while getopts ":hv" opt
+while getopts ":hvc:" opt
 do
   case $opt in
 
-    h|help     )  usage; exit 0   ;;
+    h|help          )  usage; exit 0   ;;
 
-    v|version  )  echo "$0 -- Version $ScriptVersion"; exit 0   ;;
+    v|version       )  echo "$0 -- Version $ScriptVersion"; exit 0   ;;
+    c|config-dir    )  TEMP_CONFIG_DIR="$OPTARG" ;;
 
     \? )  echo "\n  Option does not exist : $OPTARG\n"
           usage; exit 1   ;;
@@ -84,7 +87,7 @@ if [ $ITYPE = "git" ]; then
     if [ "$#" -eq 0 ];then
         GIT_REV="master"
     else
-        GIT_REV=$1
+        GIT_REV="$1"
         shift
     fi
 fi
@@ -414,8 +417,15 @@ __apt_get_noinput() {
 #       1. install_<distro>_<distro_version>_<install_type>
 #       2. install_<distro>_<install_type>
 #
+#   Optionally, define a minion configuration function, which will be called if
+#   the -c|config-dir option is passed. One of:
+#       1. config_<distro>_<distro_version>_<install_type>_minion
+#       2. config_<distro>_<distro_version>_minion
+#       3. config_<distro>_<install_type>_minion
+#       4. config_<distro>_minion
+#       5. config_minion [THIS ONE IS ALREADY DEFINED AS THE DEFAULT]
 #
-#   And optionally, define a post install function, one of:
+#   Also optionally, define a post install function, one of:
 #       1. install_<distro>_<distro_versions>_<install_type>_post
 #       2. install_<distro>_<distro_versions>_post
 #       3. install_<distro>_<install_type>_post
@@ -763,6 +773,44 @@ install_freebsd_git_post() {
 ##############################################################################
 
 
+##############################################################################
+#
+#   Default minion configuration function. Matches ANY distribution as long as
+# the -c options is passed.
+#
+config_minion() {
+    # If the configuration directory is not passed, return
+    [ "$TEMP_CONFIG_DIR" = "null" ] && return
+    # If the configuration directory does not exist, error out
+    if [ ! -d "$TEMP_CONFIG_DIR" ]; then
+        echo " * The configuration directory ${TEMP_CONFIG_DIR} does not exist."
+        exit 1
+    fi
+
+    # Let's create the necessary directories
+    [ -d /etc/salt ] || mkdir /etc/salt
+    [ -d /etc/salt/pki ] || mkdir /etc/salt/pki && chmod 700 /etc/salt/pki
+
+    # Copy the minions configuration if found
+    [ -f "$TEMP_CONFIG_DIR/minion" ] && mv "$TEMP_CONFIG_DIR/minion" /etc/salt
+
+    # Copy the minion's keys if found
+    if [ -f "$TEMP_CONFIG_DIR/minion.pem" ]; then
+        mv "$TEMP_CONFIG_DIR/minion.pem" /etc/salt/pki
+        chmod 400 /etc/salt/pki/minion.pem
+    fi
+    if [ -f "$TEMP_CONFIG_DIR/minion.pub" ]; then
+        mv "$TEMP_CONFIG_DIR/minion.pub" /etc/salt/pki
+        chmod 664 /etc/salt/pki/minion.pub
+    fi
+}
+#
+#  Ended Default Configuration function
+#
+##############################################################################
+
+
+
 #=============================================================================
 # LET'S PROCEED WITH OUR INSTALLATION
 #=============================================================================
@@ -794,7 +842,25 @@ for FUNC_NAME in $INSTALL_FUNC_NAMES; do
 done
 
 
-# Let's get the dependencies install function
+# Let's get the minion config function
+CONFIG_MINION_FUNC="null"
+if [ "$TEMP_CONFIG_DIR" != "null" ]; then
+    CONFIG_FUNC_NAMES="config_${DISTRO_NAME_L}${DISTRO_VERSION_NO_DOTS}_${ITYPE}_minion"
+    CONFIG_FUNC_NAMES="$CONFIG_FUNC_NAMES config_${DISTRO_NAME_L}${DISTRO_VERSION_NO_DOTS}_minon"
+    CONFIG_FUNC_NAMES="$CONFIG_FUNC_NAMES config_${DISTRO_NAME_L}_${ITYPE}_minion"
+    CONFIG_FUNC_NAMES="$CONFIG_FUNC_NAMES config_${DISTRO_NAME_L}_minion"
+    CONFIG_FUNC_NAMES="$CONFIG_FUNC_NAMES config_minion"
+
+    for FUNC_NAME in $CONFIG_FUNC_NAMES; do
+        if __function_defined $FUNC_NAME; then
+            CONFIG_MINION_FUNC=$FUNC_NAME
+            break
+        fi
+    done
+fi
+
+
+# Let's get the post install function
 POST_FUNC_NAMES="install_${DISTRO_NAME_L}${DISTRO_VERSION_NO_DOTS}_${ITYPE}_post"
 POST_FUNC_NAMES="$POST_FUNC_NAMES install_${DISTRO_NAME_L}${DISTRO_VERSION_NO_DOTS}_post"
 POST_FUNC_NAMES="$POST_FUNC_NAMES install_${DISTRO_NAME_L}_${ITYPE}_post"
@@ -834,6 +900,16 @@ $INSTALL_FUNC
 if [ $? -ne 0 ]; then
     echo " * Failed to run ${INSTALL_FUNC}()!!!"
     exit 1
+fi
+
+# Configure Salt
+if [ "$TEMP_CONFIG_DIR" != "null" -a "$CONFIG_MINION_FUNC" != "null" ]; then
+    echo " * Running ${CONFIG_MINION_FUNC}()"
+    $CONFIG_MINION_FUNC
+    if [ $? -ne 0 ]; then
+        echo " * Failed to run ${CONFIG_MINION_FUNC}()!!!"
+        exit 1
+    fi
 fi
 
 # Run any post install function

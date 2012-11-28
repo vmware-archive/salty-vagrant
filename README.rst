@@ -21,7 +21,7 @@ to deploy for other environments.
 
 There are two different ways to use `Salty Vagrant`_. The simplest way uses 
 the salt minion in a masterless configuration. With this option you distribute 
-your state tree along with your Vagrantfile and a dev minion config. The 
+your state tree along with your Vagrantfile and a minion config. The 
 minion will bootstrap itself and apply all necessary states.
 
 The second method lets you specify a remote salt master, which assures that 
@@ -36,12 +36,12 @@ Masterless (Quick Start)
 1. Install `Vagrant`_
 2. Install `Salty Vagrant`_ (``vagrant gem install vagrant-salt``)
 3. Get the Ubuntu 12.04 base box: ``vagrant box add precise64 http://files.vagrantup.com/precise64.box``
-4. Create/Update your ``Vagrantfile`` (Detailed in `Configuration`_)
-5. Place your salt state tree in ``salt/roots/salt``
-6. Place your minion config in ``salt/minion`` [#file_client]_
-7. Run ``vagrant up`` and you should be good to go.
+4. Create/Update your ``Vagrantfile`` (Detailed in `Configuration`_) [#shared_folders]_
+5. Place your minion config in ``salt/minion`` [#file_client]_
+6. Run ``vagrant up`` and you should be good to go.
 
 .. [#file_client] Make sure your minion config sets ``file_client: local`` for masterless
+.. [#shared_folders] Don't forget to create a shared folder for your salt file root
 
 Using Remote Salt Master
 ========================
@@ -62,7 +62,7 @@ On the master, create the keypair and add the public key to the accepted minions
 folder::
 
     root@saltmaster# salt-key --gen-keys=[minion_id]
-    root@saltmaster# cp minion_id.pub /etc/salt/pki/minions/[minion_id]
+    root@saltmaster# cp [minion_id].pub /etc/salt/pki/minions/[minion_id]
 
 Replace ``[minion_id]`` with the id you would like to assign the minion. 
 
@@ -102,26 +102,27 @@ Configuration
 Your ``Vagrantfile`` should look roughly like this::
 
     Vagrant::Config.run do |config|
+      ## Chose your base box
       config.vm.box = "precise64"
+
+      ## For masterless, mount your salt file root
+      config.vm.share_folder "salt_file_root", "/srv", "/path/to/salt_file_root"
+
+
       ## Use all the defaults:
       config.vm.provision :salt do |salt|
         salt.run_highstate = true
 
         ## Optional Settings:
         # salt.minion_config = "salt/minion.conf"
+        # salt.temp_config_dir = "/existing/folder/on/basebox/"
         # salt.salt_install_type = "git"
         # salt.salt_install_args = "develop"
 
-        ## Only Use these with a masterless setup to
-        ## load your state tree:
-        # salt.salt_file_root_path = "salt/roots/salt"
-        # salt.salt_pillar_root_path = "salt/roots/pillar"
-
         ## If you have a remote master setup, you can add
         ## your preseeded minion key
-        # salt.master = true
-        # salt.minion_key = "salt/key/testing.pem"
-        # salt.minion_pub = "salt/key/testing.pub"
+        # salt.minion_key = "salt/key/minion.pem"
+        # salt.minion_pub = "salt/key/minion.pub"
       end
     end
 
@@ -131,15 +132,15 @@ depending on whether you are running masterless or with a remote master.
 minion_config : "salt/minion.conf"
     Path to your minion configuration file.
 
+temp_config_dir : "/tmp"
+    Path on the guest box that the minion files will be copied to before
+    placing in the salt directories. (Not all distros support "/tmp")
+
 minion_key : false
     String path to your minion key. Only useful with ``master=true``
 
 minion_pub : false
     String path to your minion public key. Only useful with ``master=true``
-
-master : false
-    Boolean whether or not you want to use a remote master. If set to false,
-    make sure your minion config file has ``file_client: local`` set.
 
 salt_install_type : "stable" : "daily" : "git"
     Whether to install from a distribution's stable package manager, a
@@ -148,27 +149,6 @@ salt_install_type : "stable" : "daily" : "git"
 salt_install_args : ""
     When performing a git install, you can specify a branch, tag, or 
     any treeish.
-
-salt_file_root_path : "salt/roots/salt"
-    String path to your salt state tree. Only useful with ``master=false``.
-
-salt_file_root_guest_path : "/srv/salt"
-    Path to share the file root state tree on the VM. Only use with ``master=false``.
-
-salt_pillar_root_path : "salt/roots/pillar"
-    Path to share your pillar tree. Only useful with ``master=false``.
-
-salt_pillar_root_guest_path : "/srv/pillar"
-    Path on VM where pillar tree will be shared. Only use with ``master=true``
-
-salt_nfs_shared_folders: true or false
-    Some vagrant machines do not support shared folders, for example, FreeBSD.
-    So, if you're running salty vagrant using a masterless setup, using an NFS 
-    share might be your only option. This option tries to make salty work with 
-    NFS. For more info, please check the Vagrant documentation regarding `NFS 
-    Shares`_.
-
-.. _NFS Shares: http://vagrantup.com/v1/docs/nfs.html
 
 
 Bootstrapping Salt
@@ -197,8 +177,15 @@ In order to install salt for a distribution you need to define:
        1. install_<distro>_<distro_version>_<install_type>
        2. install_<distro>_<install_type>
 
+   Optionally, define a minion configuration function, which will be called if
+   the -c|config-dir option is passed. One of:
+       1. config_<distro>_<distro_version>_<install_type>_minion
+       2. config_<distro>_<distro_version>_minion
+       3. config_<distro>_<install_type>_minion
+       4. config_<distro>_minion
+       5. config_minion [THIS ONE IS ALREADY DEFINED AS THE DEFAULT]
 
-   And optionally, define a post install function, one of:
+   Also optionally, define a post install function, one of:
        1. install_<distro>_<distro_versions>_<install_type>_post
        2. install_<distro>_<distro_versions>_post
        3. install_<distro>_<install_type>_post
@@ -234,6 +221,9 @@ Supported Operating Systems
 - Ubuntu 10.x/11.x/12.x
 - Debian 6.x
 - CentOS 6.3
+- Fedora
+- Arch
+- FreeBSD 9.0
 
 Installation Notes
 ==================

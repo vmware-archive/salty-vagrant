@@ -2,28 +2,18 @@ module VagrantSalt
   class Provisioner < Vagrant::Provisioners::Base
     class Config < Vagrant::Config::Base
       attr_accessor :minion_config
+      attr_accessor :temp_config_dir
       attr_accessor :minion_key
       attr_accessor :minion_pub
-      attr_accessor :master
       attr_accessor :run_highstate
-      attr_accessor :salt_nfs_shared_folders
-      attr_accessor :salt_file_root_path
-      attr_accessor :salt_file_root_guest_path
-      attr_accessor :salt_pillar_root_path
-      attr_accessor :salt_pillar_root_guest_path
       attr_accessor :salt_install_type
       attr_accessor :salt_install_args
 
       def minion_config; @minion_config || "salt/minion.conf"; end
+      def temp_config_dir; @temp_config_dir || "/tmp/"; end
       def minion_key; @minion_key || false; end
       def minion_pub; @minion_pub || false; end
-      def master; @master || false; end
       def run_highstate; @run_highstate || false; end
-      def salt_nfs_shared_folders; @salt_nfs_shared_folders || false; end
-      def salt_file_root_path; @salt_file_root_path || "salt/roots/salt"; end
-      def salt_file_root_guest_path; @salt_file_root_guest_path || "/srv/salt"; end
-      def salt_pillar_root_path; @salt_pillar_root_path || "salt/roots/pillar"; end
-      def salt_pillar_root_guest_path; @salt_pillar_root_guest_path || "/srv/pillar"; end
       def salt_install_type; @salt_install_type || ''; end
       def salt_install_args; @salt_install_args || ''; end
 
@@ -33,7 +23,11 @@ module VagrantSalt
       end
 
       def bootstrap_options
-        '%s %s' % [salt_install_type, salt_install_args]
+        options = '%s %s' % [salt_install_type, salt_install_args]
+        if temp_config_dir
+          options = options + '-c %s' % temp_config_dir
+        end
+        return options
       end
     end
 
@@ -44,52 +38,11 @@ module VagrantSalt
     def prepare
       # Calculate the paths we're going to use based on the environment
       @expanded_minion_config_path = config.expanded_path(env[:root_path], config.minion_config)
-      if !config.master
-        env[:ui].info "Adding state tree folders."
-        @expanded_salt_file_root_path = config.expanded_path(env[:root_path], config.salt_file_root_path)
-        @expanded_salt_pillar_root_path = config.expanded_path(env[:root_path], config.salt_pillar_root_path)
-        check_salt_file_root_path
-        check_salt_pillar_root_path
-        share_salt_file_root_path
-        share_salt_pillar_root_path
-      end
 
       if config.minion_key
         @expanded_minion_key_path = config.expanded_path(env[:root_path], config.minion_key)
         @expanded_minion_pub_path = config.expanded_path(env[:root_path], config.minion_pub)
       end
-    end
-
-    def check_salt_file_root_path
-      if !File.directory?(@expanded_salt_file_root_path)
-        raise "Salt file root path does not exist: #{@expanded_salt_file_root_path}"
-      end
-    end
-
-    def check_salt_pillar_root_path
-      if !File.directory?(@expanded_salt_pillar_root_path)
-        raise "Salt pillar root path does not exist: #{@expanded_salt_pillar_root_path}"
-      end
-    end
-
-    def share_salt_file_root_path
-      env[:ui].info "Sharing file root folder."
-      env[:vm].config.vm.share_folder(
-        "salt_file_root",
-        config.salt_file_root_guest_path,
-        @expanded_salt_file_root_path,
-        :nfs => config.salt_nfs_shared_folders
-      )
-    end
-
-    def share_salt_pillar_root_path
-      env[:ui].info "Sharing pillar root path."
-      env[:vm].config.vm.share_folder(
-        "salt_pillar_root",
-        config.salt_pillar_root_guest_path,
-        @expanded_salt_pillar_root_path,
-        :nfs => config.salt_nfs_shared_folders
-      )
     end
 
     def salt_exists
@@ -140,16 +93,13 @@ module VagrantSalt
 
     def upload_minion_config
       env[:ui].info "Copying salt minion config to vm."
-      env[:vm].channel.upload(@expanded_minion_config_path.to_s, "/tmp/minion")
-      env[:vm].channel.sudo("mkdir -p /etc/salt &> /dev/null; mv /tmp/minion /etc/salt/minion")
+      env[:vm].channel.upload(@expanded_minion_config_path.to_s, config.temp_config_dir + "minion")
     end
 
     def upload_minion_keys
       env[:ui].info "Uploading minion key."
-      env[:vm].channel.upload(@expanded_minion_key_path.to_s, "/tmp/minion.pem")
-      env[:vm].channel.sudo("mkdir -p /etc/salt/pki &> /dev/null; mv /tmp/minion.pem /etc/salt/pki/minion.pem")
-      env[:vm].channel.upload(@expanded_minion_pub_path.to_s, "/tmp/minion.pub")
-      env[:vm].channel.sudo("mv /tmp/minion.pub /etc/salt/pki/minion.pub")
+      env[:vm].channel.upload(@expanded_minion_key_path.to_s, config.temp_config_dir + "minion.pem")
+      env[:vm].channel.upload(@expanded_minion_pub_path.to_s, config.temp_config_dir + "minion.pub")
     end
 
     def provision!
@@ -160,26 +110,10 @@ module VagrantSalt
         upload_minion_keys
       end
 
-      if !config.master
-        verify_shared_folders([config.salt_file_root_guest_path, config.salt_pillar_root_guest_path])
-      end
-
       if !salt_exists
         bootstrap_salt_minion
       end
 
-      if !config.master
-        begin
-          env[:vm].channel.sudo("mount|grep salt_")
-        rescue
-          env[:ui].warn(
-            'Failed to mount the salt shares! Does the vagrant machine have ' \
-            'Shared Folders support? If you have an NFS server around you '   \
-            'can try setting "salt.salt_nfs_shared_folders = true" and use '  \
-            '":nfs => true" on any shares you\'re trying to mount yourself.'
-          )
-        end
-      end
       call_highstate
     end
 
@@ -193,6 +127,7 @@ module VagrantSalt
       end
     end
   end
+
 end
 
 # vim: fenc=utf-8 spell spl=en cc=80 sts=2 sw=2 et

@@ -31,7 +31,6 @@ Gem::Specification.new do |s|
       end
 
       # remove leading path parts to get paths relative to the gem's root dir
-      # (this assumes, that the gemspec resides in the gem's root dir)
       submodule_files_paths = submodule_files_fullpaths.map do |filename|
         filename.gsub "#{File.dirname(File.expand_path(File.dirname(__FILE__)))}/", ""
       end

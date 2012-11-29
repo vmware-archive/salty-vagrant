@@ -245,7 +245,9 @@ Installing from source
 1. ``wget https://github.com/saltstack/salty-vagrant/tarball/master -O salty-vagrant.tar.gz``
 2. ``tar zxf salty-vagrant.tar.gz``
 3. ``cd saltstack-salty-vagrant-[hash]``
-4. ``gem build vagrant-salt.gemspec``
-5. ``vagrant gem install vagrant-salt-[version].gem``
+4. ``git submodule init``
+4. ``git submodule update``
+5. ``gem build vagrant-salt.gemspec``
+6. ``vagrant gem install vagrant-salt-[version].gem``
 
 .. vim: fenc=utf-8 spell spl=en cc=80 tw=79 fo=want sts=2 sw=2 et

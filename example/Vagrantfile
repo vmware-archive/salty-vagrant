@@ -5,12 +5,12 @@ Vagrant::Config.run do |config|
   config.vm.box = "precise64"
 
   ## For masterless, mount your salt file root
-  config.vm.share_folder "salt_file_root", "/srv", "/path/to/salt_file_root"
+  config.vm.share_folder "salt_file_root", "/srv", "salt/roots/"
 
 
   ## Use all the defaults:
   config.vm.provision :salt do |salt|
-    salt.run_highstate = true
+    salt.run_highstate = false
 
     ## Optional Settings:
     # salt.minion_config = "salt/minion.conf"

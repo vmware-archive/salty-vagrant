@@ -15,7 +15,7 @@ Introduction
 ============
 
 Just like Chef or Puppet, Salt can be used as a provisioning tool. 
-`Salty Vagrant`_ lets you use your salt state tree and a your minion config 
+`Salty Vagrant`_ lets you use your salt state tree and your minion config 
 file to automatically build your dev environment the same way you use salt 
 to deploy for other environments.
 
@@ -84,7 +84,7 @@ You will need to determine your own secure method of transferring this
 package. Leaking the minion's private key poses a security risk to your salt 
 network.
 
-The are two required settings for your ``minion.conf`` file::
+There are two required settings for your ``minion.conf`` file::
 
     master: [master_fqdn]
     id: [minion_id]

@@ -113,6 +113,12 @@ module VagrantSalt
 
       if !salt_exists
         bootstrap_salt_minion
+      else
+        # If salt is installed, we still want to copy over the minion conf if
+        # it's specified in the Vagrantfile
+        if config.minion_config
+          env[:vm].channel.sudo("cp #{config.temp_config_dir}minion /etc/salt/minion")
+        end
       end
 
       call_highstate

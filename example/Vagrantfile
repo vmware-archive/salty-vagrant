@@ -1,18 +1,18 @@
 # require "../lib/vagrant-salt"
 
-Vagrant::Config.run do |config|
+Vagrant.configure("2") do |config|
   ## Chose your base box
   config.vm.box = "precise64"
 
   ## For masterless, mount your salt file root
-  config.vm.share_folder "salt_file_root", "/srv", "salt/roots/"
+  config.vm.synced_folder "salt/roots/", "/srv/"
 
 
   ## Use all the defaults:
   config.vm.provision :salt do |salt|
 
     # Config Options
-    # salt.minion_config = "salt/minion.conf"
+    salt.minion_config = "salt/minion.conf"
     # salt.minion_key = "salt/key/minion.pem"
     # salt.minion_pub = "salt/key/minion.pub"
 
@@ -36,7 +36,7 @@ Vagrant::Config.run do |config|
     # salt.accept_keys = true
     # salt.verbose = true
     # salt.always_install = true
-    # salt.bootstrap_script = "salt/bootstrap-salt.sh"
+    salt.bootstrap_script = "salt/bootstrap-salt.sh"
 
   end
 end

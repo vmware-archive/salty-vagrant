@@ -10,17 +10,33 @@ Vagrant::Config.run do |config|
 
   ## Use all the defaults:
   config.vm.provision :salt do |salt|
-    salt.run_highstate = false
 
-    ## Optional Settings:
+    # Config Options
     # salt.minion_config = "salt/minion.conf"
-    # salt.temp_config_dir = "/existing/folder/on/basebox/"
-    # salt.salt_install_type = "git"
-    # salt.salt_install_args = "develop"
-
-    ## If you have a remote master setup, you can add
-    ## your preseeded minion key
     # salt.minion_key = "salt/key/minion.pem"
     # salt.minion_pub = "salt/key/minion.pub"
+
+    # salt.master_config = "salt/master.conf"
+    # salt.master_key = "salt/key/master.pem"
+    # salt.master_pub = "salt/key/master.pub"
+
+    ## Bootstrap Options
+    # salt.install_type = "git"
+    # salt.install_args = "develop"
+    # salt.install_master = true
+    # salt.install_syndic = true
+    # salt.no_minion = true
+    # salt.temp_config_dir = "/home/vagrant"
+
+    ## Extra bootstrap options
+    # salt.bootstrap_options = "-D"
+
+    # Helpful Extras
+    salt.run_highstate = true
+    # salt.accept_keys = true
+    # salt.verbose = true
+    # salt.always_install = true
+    # salt.bootstrap_script = "salt/bootstrap-salt.sh"
+
   end
 end

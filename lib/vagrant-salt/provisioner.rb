@@ -4,7 +4,6 @@ module VagrantPlugins
 
 
       def provision
-        @machine.env.ui.info @no_minion
         upload_configs
         upload_keys
         run_bootstrap_script

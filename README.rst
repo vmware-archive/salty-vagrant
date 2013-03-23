@@ -29,7 +29,7 @@ Masterless (Quick Start)
 ========================
 
 1. Install `Vagrant`_
-2. Install `Salty Vagrant`_ (``vagrant gem install vagrant-salt``)
+2. Install `Salty Vagrant`_ (``vagrant plugin install vagrant-salt``)
 3. Get the Ubuntu 12.04 base box: ``vagrant box add precise64 http://files.vagrantup.com/precise64.box``
 4. Create/Update your ``Vagrantfile`` (Detailed in `Configuration`_) [#shared_folders]_
 5. Place your minion config in ``salt/minion`` [#file_client]_
@@ -45,19 +45,18 @@ Configuration
 Here is an extremely simple ``Vagrantfile``, to be used with 
 the above masterless setup::
 
-    Vagrant::Config.run do |config|
+    Vagrant.configure("2") do |config|
       ## Chose your base box
       config.vm.box = "precise64"
 
-      ## Important! To use your formulas, you have to share the folder!!
-      config.vm.share_folder "salt_file_root", "/srv", "/path/to/salt_file_root"
-
+      ## For masterless, mount your salt file root
+      config.vm.synced_folder "salt/roots/", "/srv/"
 
       ## Use all the defaults:
       config.vm.provision :salt do |salt|
+
         salt.run_highstate = true
 
-        ## Other options can do here
       end
     end
 
@@ -140,23 +139,11 @@ Installation Notes
 Supported Operating Systems
 ---------------------------
 - Ubuntu 10.x/11.x/12.x
-- Debian 6.x
+- Debian 6.x/7.x
 - CentOS 6.3
 - Fedora
 - Arch
 - FreeBSD 9.0
-
-Ubuntu & Debian
----------------
-
-Users have reported that vagrant plugins do not work with the debian packaged vagrant
-(such as Ubuntu repository). Installing vagrant with gem should work.
-
-1. ``sudo apt-get remove vagrant``
-2. ``sudo gem install vagrant``
-3. ``vagrant gem install vagrant-salt``
-
-That should get you up and running.
 
 Installing from source
 ----------------------
@@ -167,7 +154,7 @@ Installing from source
 4. ``git submodule init``
 5. ``git submodule update``
 6. ``gem build vagrant-salt.gemspec``
-7. ``vagrant gem install vagrant-salt-[version].gem``
+7. ``vagrant plugin install vagrant-salt-[version].gem``
 
 
 Miscellaneous

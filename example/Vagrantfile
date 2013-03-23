@@ -7,7 +7,6 @@ Vagrant.configure("2") do |config|
   ## For masterless, mount your salt file root
   config.vm.synced_folder "salt/roots/", "/srv/"
 
-
   ## Use all the defaults:
   config.vm.provision :salt do |salt|
 
@@ -21,10 +20,10 @@ Vagrant.configure("2") do |config|
     # salt.master_pub = "salt/key/master.pub"
 
     ## Bootstrap Options
-    # salt.install_type = "git"
-    # salt.install_args = "develop"
-    # salt.install_master = true
-    # salt.install_syndic = true
+    salt.install_type = "git"
+    salt.install_args = "develop"
+    salt.install_master = true
+    salt.install_syndic = true
     # salt.no_minion = true
     # salt.temp_config_dir = "/home/vagrant"
 
@@ -33,7 +32,7 @@ Vagrant.configure("2") do |config|
 
     # Helpful Extras
     salt.run_highstate = true
-    # salt.accept_keys = true
+    salt.accept_keys = true
     # salt.verbose = true
     # salt.always_install = true
     # salt.bootstrap_script = "salt/custom-bootstrap-salt.sh"

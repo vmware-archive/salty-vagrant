@@ -4,6 +4,7 @@ module VagrantPlugins
 
 
       def provision
+        @machine.env.ui.info @no_minion
         upload_configs
         upload_keys
         run_bootstrap_script
@@ -66,8 +67,6 @@ module VagrantPlugins
       def bootstrap_options(install, configure, config_dir)
         options = ""
 
-        @machine.env.ui.info install
-        @machine.env.ui.info @install_master
         ## Any extra options passed to bootstrap
         if @config.bootstrap_options
           options = "%s %s" % [options, @config.bootstrap_options]
@@ -101,7 +100,9 @@ module VagrantPlugins
             options = "%s %s" % [options, @config.install_args]
           end 
         end
-        @machine.env.ui.info options
+        if @config.verbose
+          env.ui.info "Using Bootstrap Options: %s" % options
+        end
         return options
       end
 

@@ -64,7 +64,7 @@ module VagrantPlugins
         @install_type       = nil if @install_type == UNSET_VALUE
         @install_args       = nil if @install_args == UNSET_VALUE
         @install_master     = nil if @install_master == UNSET_VALUE
-        @install_syndic     = nil if  @install_syndic == UNSET_VALUE
+        @install_syndic     = nil if @install_syndic == UNSET_VALUE
         @no_minion          = nil if @no_minion == UNSET_VALUE
         @bootstrap_options  = nil if @bootstrap_options == UNSET_VALUE
 
@@ -72,7 +72,6 @@ module VagrantPlugins
 
       def validate(machine)
         errors = []
-
         if @minion_key || @minion_pub
           if !@minion_key || !@minion_pub
             errors << @minion_pub

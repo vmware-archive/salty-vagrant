@@ -36,7 +36,7 @@ Vagrant.configure("2") do |config|
     # salt.accept_keys = true
     # salt.verbose = true
     # salt.always_install = true
-    salt.bootstrap_script = "salt/bootstrap-salt.sh"
+    # salt.bootstrap_script = "salt/custom-bootstrap-salt.sh"
 
   end
 end

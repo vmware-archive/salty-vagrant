@@ -5,7 +5,7 @@ rescue LoadError
 end
 
 if Vagrant::VERSION < "1.1.0"
-  raise "This version of Vagrant Salt is only compatible with Vagrant 1.1+"
+  raise "Please install vagrant-salt gem <=0.3.4 for Vagrant < 1.1.0"
 end
 
 module VagrantPlugins
@@ -17,12 +17,12 @@ module VagrantPlugins
       DESC
 
       config(:salt, :provisioner) do
-        require_relative "config"
+        require File.expand_path("../config", __FILE__)
         Config
       end
 
-      provisioner(:salt)   do
-        require_relative "provisioner"
+      provisioner(:salt) do
+        require File.expand_path("../provisioner", __FILE__)
         Provisioner
       end
 

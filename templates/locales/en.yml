@@ -1,0 +1,14 @@
+en:
+  salt:
+    missing_key: |-
+      You must include both public and private keys.
+    must_accept_keys: |-
+      You must accept keys when running highstate with master!
+    accept_key_no_minion: |-
+      You must install the minion to accept keys on master!
+    accept_key_no_master: |-
+      You must install the master to accept minion keys!
+    not_received_minion_key: |-
+      Salt Master did not receive minion key.
+    bootstrap_failed: |-
+      Bootstrap script failed, see /var/log/bootstrap-salt.log on VM.

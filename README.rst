@@ -179,7 +179,7 @@ On the master, create the keypair and add the public key to the accepted minions
 folder::
 
     root@saltmaster# salt-key --gen-keys=[minion_id]
-    root@saltmaster# cp [minion_id].pub /etc/salt/pki/minions/[minion_id]
+    root@saltmaster# cp [minion_id].pub /etc/salt/pki/master/minions/[minion_id]
 
 Replace ``[minion_id]`` with the id you would like to assign the minion. 
 

@@ -18,13 +18,13 @@ Introduction
 `Salty Vagrant`_ is a plugin for Vagrant which lets you use salt as a 
 provisioning tool. You can use your existing salt formulas and configs 
 to build up development environments.
->>>>>>> new_format
 
 .. _`Salty Vagrant`: https://github.com/saltstack/salty-vagrant
 
 The simplest way to use `Salty Vagrant`_ is by configuring it for 
 masterless mode. With this setup, you use a standalone minion along
-with your formula tree.
+with your file_roots and/or pillar_roots. See the ``examples/`` folder
+for more details.
 
 Masterless (Quick Start)
 ========================

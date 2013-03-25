@@ -100,7 +100,7 @@ module VagrantPlugins
           end 
         end
         if @config.verbose
-          env.ui.info "Using Bootstrap Options: %s" % options
+          @machine.env.ui.info "Using Bootstrap Options: %s" % options
         end
         return options
       end
@@ -175,7 +175,7 @@ module VagrantPlugins
             end
           end
           if !bootstrap
-            raise SaltError, :bootstrap_failed
+            raise Salt::Errors::SaltError, :bootstrap_failed
           end
 
           if configure and !install
@@ -212,7 +212,7 @@ module VagrantPlugins
               end
               sleep 1
               if attempts > 10
-                raise SaltError, :not_received_minion_key
+                raise Salt::Errors::SaltError, :not_received_minion_key
               end
             end
 

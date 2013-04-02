@@ -97,7 +97,7 @@ module VagrantPlugins
 
           if @config.install_args
             options = "%s %s" % [options, @config.install_args]
-          end 
+          end
         end
         if @config.verbose
           @machine.env.ui.info "Using Bootstrap Options: %s" % options
@@ -159,7 +159,7 @@ module VagrantPlugins
           else
             @machine.env.ui.info "Bootstrapping Salt... (this may take a while)"
           end
-          
+
           bootstrap_path = get_bootstrap()
           bootstrap_destination = File.join(config_dir, "bootstrap_salt.sh")
           @machine.communicate.upload(bootstrap_path.to_s, bootstrap_destination)
@@ -185,7 +185,7 @@ module VagrantPlugins
           elsif !configure and install
             @machine.env.ui.info "Salt successfully installed!"
           end
-        
+
         else
           @machine.env.ui.info "Salt did not need installing or configuring."
         end
@@ -199,8 +199,17 @@ module VagrantPlugins
             @machine.env.ui.info "Waiting for minion key..."
             key_staged = false
             attempts = 0
+            @machine.communicate.sudo("salt-key -l acc | wc -l") do |type, output|
+              begin
+                output = Integer(output)
+                if output > 1
+                  key_staged = true
+                end
+              rescue
+              end
+            end
             while !key_staged
-              attempts += 1 
+              attempts += 1
               @machine.communicate.sudo("salt-key -l pre | wc -l") do |type, output|
                 begin
                   output = Integer(output)

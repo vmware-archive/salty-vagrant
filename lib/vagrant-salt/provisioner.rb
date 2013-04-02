@@ -97,7 +97,7 @@ module VagrantPlugins
 
           if @config.install_args
             options = "%s %s" % [options, @config.install_args]
-          end 
+          end
         end
         if @config.verbose
           @machine.env.ui.info "Using Bootstrap Options: %s" % options
@@ -159,7 +159,7 @@ module VagrantPlugins
           else
             @machine.env.ui.info "Bootstrapping Salt... (this may take a while)"
           end
-          
+
           bootstrap_path = get_bootstrap()
           bootstrap_destination = File.join(config_dir, "bootstrap_salt.sh")
           @machine.communicate.upload(bootstrap_path.to_s, bootstrap_destination)
@@ -185,7 +185,7 @@ module VagrantPlugins
           elsif !configure and install
             @machine.env.ui.info "Salt successfully installed!"
           end
-        
+
         else
           @machine.env.ui.info "Salt did not need installing or configuring."
         end
@@ -200,7 +200,7 @@ module VagrantPlugins
             key_staged = false
             attempts = 0
             while !key_staged
-              attempts += 1 
+              attempts += 1
               @machine.communicate.sudo("salt-key -l pre | wc -l") do |type, output|
                 begin
                   output = Integer(output)
@@ -225,10 +225,19 @@ module VagrantPlugins
       def call_highstate
         if @config.run_highstate
           @machine.env.ui.info "Calling state.highstate... (this may take a while)"
-          @machine.communicate.sudo("salt-call saltutil.sync_all")
-          @machine.communicate.sudo("salt-call state.highstate -l debug") do |type, data|
-            if @config.verbose
-              @machine.env.ui.info(data)
+          if @config.install_master
+            @machine.communicate.sudo("salt '*' saltutil.sync_all")
+            @machine.communicate.sudo("salt '*' state.highstate --verbose") do |type, data|
+              if @config.verbose
+                @machine.env.ui.info(data)
+              end
+            end
+          else
+            @machine.communicate.sudo("salt-call saltutil.sync_all")
+            @machine.communicate.sudo("salt-call state.highstate -l debug") do |type, data|
+              if @config.verbose
+                @machine.env.ui.info(data)
+              end
             end
           end
         else

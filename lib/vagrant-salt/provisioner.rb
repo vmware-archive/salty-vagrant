@@ -199,6 +199,15 @@ module VagrantPlugins
             @machine.env.ui.info "Waiting for minion key..."
             key_staged = false
             attempts = 0
+            @machine.communicate.sudo("salt-key -l acc | wc -l") do |type, output|
+              begin
+                output = Integer(output)
+                if output > 1
+                  key_staged = true
+                end
+              rescue
+              end
+            end
             while !key_staged
               attempts += 1
               @machine.communicate.sudo("salt-key -l pre | wc -l") do |type, output|

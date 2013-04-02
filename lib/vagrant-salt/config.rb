@@ -1,5 +1,6 @@
 require "i18n"
 require "vagrant"
+require "yaml"
 
 module VagrantPlugins
   module Salt
@@ -90,8 +91,15 @@ module VagrantPlugins
           errors << I18n.t("salt.accept_key_no_master")
         end
 
-        if @install_master && !@no_minion && !@accept_keys && @run_highstate
-          errors << I18n.t("salt.must_accept_keys")
+        if @install_master && !@no_minion && @run_highstate
+          if @master_config
+            master_config = YAML::load_file(@master_config)
+            if !master_config["auto_accept"] && !@accept_keys
+              errors << I18n.t("salt.must_accept_keys")
+            end
+          elsif !@accept_keys
+            errors << I18n.t("salt.must_accept_keys")
+          end
         end
 
         return {"salt" => errors}

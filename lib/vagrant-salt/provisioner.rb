@@ -2,12 +2,16 @@ module VagrantPlugins
   module Salt
     class Provisioner < Vagrant.plugin("2", :provisioner)
 
-
       def provision
         upload_configs
         upload_keys
         run_bootstrap_script
-        accept_keys
+        if @config.accept_keys
+          accept_keys
+        end
+        if @config.scp_keys
+          scp_keys
+        end
         call_highstate
       end
 
@@ -133,6 +137,10 @@ module VagrantPlugins
           @machine.communicate.upload(expanded_path(@config.master_key).to_s, temp_config_dir + "/master.pem")
           @machine.communicate.upload(expanded_path(@config.master_pub).to_s, temp_config_dir + "/master.pub")
         end
+
+        if @config.seed_master and @config.install_master:
+            # do upload here
+        end
       end
 
       # Get bootstrap file location, bundled or custom
@@ -192,7 +200,6 @@ module VagrantPlugins
       end
 
       def accept_keys
-        if @config.accept_keys
           if !@machine.communicate.test("which salt-key")
             @machine.env.ui.info "Salt-key not installed!"
           else
@@ -219,7 +226,6 @@ module VagrantPlugins
             @machine.env.ui.info "Accepting minion key."
             @machine.communicate.sudo("salt-key -A")
           end
-        end
       end
 
       def call_highstate

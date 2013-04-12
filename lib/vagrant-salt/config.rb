@@ -17,6 +17,7 @@ module VagrantPlugins
       attr_accessor :accept_keys
       attr_accessor :bootstrap_script
       attr_accessor :verbose
+      attr_accessor :seed_master
 
       ## bootstrap options
       attr_accessor :temp_config_dir
@@ -39,6 +40,7 @@ module VagrantPlugins
         @accept_keys = UNSET_VALUE
         @bootstrap_script = UNSET_VALUE
         @verbose = UNSET_VALUE
+        @seed_master = UNSET_VALUE
         @temp_config_dir = UNSET_VALUE
         @install_type = UNSET_VALUE
         @install_args = UNSET_VALUE
@@ -60,6 +62,7 @@ module VagrantPlugins
         @accept_keys        = nil if @accept_keys == UNSET_VALUE
         @bootstrap_script   = nil if @bootstrap_script == UNSET_VALUE
         @verbose            = nil if @verbose == UNSET_VALUE
+        @seed_master           = nil if @seed_master == UNSET_VALUE
         @temp_config_dir    = nil if @temp_config_dir == UNSET_VALUE
         @install_type       = nil if @install_type == UNSET_VALUE
         @install_args       = nil if @install_args == UNSET_VALUE

@@ -62,7 +62,7 @@ module VagrantPlugins
         @accept_keys        = nil if @accept_keys == UNSET_VALUE
         @bootstrap_script   = nil if @bootstrap_script == UNSET_VALUE
         @verbose            = nil if @verbose == UNSET_VALUE
-        @seed_master           = nil if @seed_master == UNSET_VALUE
+        @seed_master        = nil if @seed_master == UNSET_VALUE
         @temp_config_dir    = nil if @temp_config_dir == UNSET_VALUE
         @install_type       = nil if @install_type == UNSET_VALUE
         @install_args       = nil if @install_args == UNSET_VALUE
@@ -93,7 +93,7 @@ module VagrantPlugins
           errors << I18n.t("salt.accept_key_no_master")
         end
 
-        if @install_master && !@no_minion && !@accept_keys && @run_highstate
+        if @install_master && !@no_minion && !@accept_keys && !@seed_master && @run_highstate
           errors << I18n.t("salt.must_accept_keys")
         end
 

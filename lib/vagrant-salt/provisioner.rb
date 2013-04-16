@@ -1,20 +1,56 @@
+require 'json'
+
 module VagrantPlugins
   module Salt
     class Provisioner < Vagrant.plugin("2", :provisioner)
-
+    
       def provision
         upload_configs
         upload_keys
         run_bootstrap_script
+
+        if @config.seed_master and @config.install_master
+          seed_master
+        end
+
         if @config.accept_keys
+          @machine.env.ui.warn "ATTENTION: 'salt.accept_keys' is deprecated. Please use salt.seed_master to upload your minion keys"
           accept_keys
         end
-        if @config.scp_keys
-          scp_keys
-        end
+
         call_highstate
       end
 
+      def seed_master
+        @machine.env.ui.info 'Uploading %d keys to /etc/salt/pki/master/minions/' % config.seed_master.length
+        staged_keys = accepted_keys
+        @config.seed_master.each do |name, keyfile|
+          if staged_keys.include? name
+            @machine.env.ui.warn "Accepting staged key: %s" %name
+            @machine.communicate.sudo("salt-key -a %s" %name)
+            next
+          end
+          sourcepath = expanded_path(keyfile).to_s
+          dest = '/tmp/seed-%s.pub' %name 
+          
+          @machine.communicate.upload(sourcepath, dest)   
+          @machine.communicate.sudo("mv /tmp/seed-%s.pub /etc/salt/pki/master/minions/%s" %[name, name])   
+        end
+      end
+
+      # Return a list of accepted keys
+      def accepted_keys
+        out = @machine.communicate.sudo("salt-key -l acc --out json") do |type, output|
+          begin
+            if type == :stdout
+              out = JSON::load(output)
+              break out['minions']
+            end
+          end
+        end
+        return out
+      end
+      
       ## Utilities
       def expanded_path(rel_path)
         Pathname.new(rel_path).expand_path(@machine.env.root_path)
@@ -103,12 +139,13 @@ module VagrantPlugins
             options = "%s %s" % [options, @config.install_args]
           end
         end
+
         if @config.verbose
           @machine.env.ui.info "Using Bootstrap Options: %s" % options
         end
+
         return options
       end
-
 
       ## Actions
       # Copy master and minion configs to VM
@@ -137,10 +174,6 @@ module VagrantPlugins
           @machine.communicate.upload(expanded_path(@config.master_key).to_s, temp_config_dir + "/master.pem")
           @machine.communicate.upload(expanded_path(@config.master_pub).to_s, temp_config_dir + "/master.pub")
         end
-
-        if @config.seed_master and @config.install_master:
-            # do upload here
-        end
       end
 
       # Get bootstrap file location, bundled or custom
@@ -161,7 +194,6 @@ module VagrantPlugins
         options = bootstrap_options(install, configure, config_dir)
 
         if configure or install
-
           if configure and !install
             @machine.env.ui.info "Salt binaries found. Configuring only."
           else
@@ -182,6 +214,7 @@ module VagrantPlugins
               @machine.env.ui.info(data.rstrip)
             end
           end
+
           if !bootstrap
             raise Salt::Errors::SaltError, :bootstrap_failed
           end
@@ -193,41 +226,58 @@ module VagrantPlugins
           elsif !configure and install
             @machine.env.ui.info "Salt successfully installed!"
           end
-
         else
           @machine.env.ui.info "Salt did not need installing or configuring."
         end
       end
-
+      
+      # DEPRECATED
       def accept_keys
-          if !@machine.communicate.test("which salt-key")
-            @machine.env.ui.info "Salt-key not installed!"
-          else
-            @machine.env.ui.info "Waiting for minion key..."
-            key_staged = false
-            attempts = 0
-            while !key_staged
-              attempts += 1
-              @machine.communicate.sudo("salt-key -l pre | wc -l") do |type, output|
-                begin
-                  output = Integer(output)
-                  if output > 1
-                    key_staged = true
-                  end
-                rescue
+        if !@machine.communicate.test("which salt-key")
+          @machine.env.ui.info "Salt-key not installed!"
+          return 
+        end
+
+        key_staged = false
+
+        keys = accepted_keys
+        if keys.length > 0
+          @machine.env.ui.info "Minion keys registered:"
+          keys.each do |name|
+            @machine.env.ui.info " - %s" %name
+          end
+          return
+        end
+
+        @machine.env.ui.info "Waiting for minion key..."
+
+        attempts = 0
+        while !key_staged
+          attempts += 1
+          numkeys = @machine.communicate.sudo("salt-key -l pre | wc -l") do |type, rawoutput|
+            begin
+              if type == :stdout
+                output = Integer(rawoutput)
+                if output > 1
+                  key_staged = true
                 end
-              end
-              sleep 1
-              if attempts > 10
-                raise Salt::Errors::SaltError, :not_received_minion_key
+                break output
               end
             end
-
-            @machine.env.ui.info "Accepting minion key."
-            @machine.communicate.sudo("salt-key -A")
           end
-      end
 
+          sleep 1
+          if attempts > 10
+            raise Salt::Errors::SaltError, "No keys staged"
+          end
+        end
+
+        if key_staged
+          @machine.env.ui.info "Adding %s key(s) for minion(s)" %numkeys           
+          @machine.communicate.sudo("salt-key -A")
+        end
+      end
+  
       def call_highstate
         if @config.run_highstate
           @machine.env.ui.info "Calling state.highstate... (this may take a while)"
@@ -250,7 +300,6 @@ module VagrantPlugins
           @machine.env.ui.info "run_highstate set to false. Not running state.highstate."
         end
       end
-
     end
   end
 end

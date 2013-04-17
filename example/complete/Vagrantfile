@@ -34,6 +34,9 @@ Vagrant.configure("2") do |config|
     # Install a master on this machine
     salt.install_master = true
 
+    # Pre-seed your master (recommended)
+    salt.seed_master = {minion: salt.minion_pub}
+
     # Can also install syndic:
     # salt.install_syndic = true
 
@@ -44,7 +47,9 @@ Vagrant.configure("2") do |config|
     # Normally we want to run state.highstate to provision the machine
     salt.run_highstate = true
 
-    # If you are using a master with minion setup, you need to accept keys
+    # If you are using a master with minion setup, you may accept keys
+    # If keys have already been except, it will pass
+    # DEPRECATED
     salt.accept_keys = true
 
     # Default will not install / update salt binaries if they are present

@@ -68,7 +68,7 @@ run_highstate    (true/false)
     Executes ``state.highstate`` on vagrant up
 
 accept_keys      (true/false)
-    Accept all keys if running a master
+    Accept all keys if running a master. DEPRECATED: use `seed_master`
 
 
 Install Options
@@ -119,6 +119,10 @@ master_key       (salt/key/master.pem)
 
 master_pub       (salt/key/master.pub)
   Path to your master public key
+
+seed_master  {minion_name:/path/to/key.pub}
+  Upload keys to master, thereby pre-seeding it
+  before use.
 
 
 Other

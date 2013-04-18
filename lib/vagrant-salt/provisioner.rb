@@ -23,7 +23,7 @@ module VagrantPlugins
 
       def seed_master
         @machine.env.ui.info 'Uploading %d keys to /etc/salt/pki/master/minions/' % config.seed_master.length
-        staged_keys = accepted_keys
+        staged_keys = keys('minions_pre')
         @config.seed_master.each do |name, keyfile|
           if staged_keys.include? name
             @machine.env.ui.warn "Accepting staged key: %s" %name
@@ -39,12 +39,12 @@ module VagrantPlugins
       end
 
       # Return a list of accepted keys
-      def accepted_keys
-        out = @machine.communicate.sudo("salt-key -l acc --out json") do |type, output|
+      def keys(group='minions')
+        out = @machine.communicate.sudo("salt-key --out json") do |type, output|
           begin
             if type == :stdout
               out = JSON::load(output)
-              break out['minions']
+              break out[group]
             end
           end
         end
@@ -240,7 +240,7 @@ module VagrantPlugins
 
         key_staged = false
 
-        keys = accepted_keys
+        keys = keys()
         if keys.length > 0
           @machine.env.ui.info "Minion keys registered:"
           keys.each do |name|

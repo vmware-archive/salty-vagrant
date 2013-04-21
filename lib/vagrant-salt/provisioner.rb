@@ -188,7 +188,7 @@ module VagrantPlugins
 
         # Write out each pillar file and save top.sls changes
         @config.pillar_data.each_with_index do |(file, data), idx|
-          @machine.env.ui.info "Generating Pillar data in #{file}.sls..."
+          @machine.env.ui.info "[salt:pillar] Generating data in #{file}.sls..."
 
           top['base'][minion].is_a?(Array) ?
             top['base'][minion] |= ["_gen/#{file}"] :
@@ -201,7 +201,7 @@ module VagrantPlugins
 
           # Write changes to top.sls if needed
           if idx == @config.pillar_data.size - 1
-            @machine.env.ui.info "Updating top.sls for Pillar..."
+            @machine.env.ui.info "[salt:pillar] Updating top.sls..."
             File.open(File.join(root, "top.sls"), "w") do |f|
               f.write(cleanyaml[top])
             end

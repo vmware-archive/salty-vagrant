@@ -1,10 +1,12 @@
 require 'json'
+require 'yaml'
 
 module VagrantPlugins
   module Salt
     class Provisioner < Vagrant.plugin("2", :provisioner)
     
       def provision
+        prepare_pillar
         upload_configs
         upload_keys
         run_bootstrap_script
@@ -148,6 +150,65 @@ module VagrantPlugins
       end
 
       ## Actions
+      # Export pillar data
+      def prepare_pillar
+        prepkeys = lambda do |hash|
+          h = {}
+          hash.each do |k, v|
+            h.merge!(k.to_s => (v.is_a?(Hash) ? prepkeys[v] : v))
+          end
+        end
+
+        # Convert to YAML and remove some extra stuff that may get added in
+        cleanyaml = lambda do |data|
+          prepkeys[data].to_yaml.
+            gsub("!ruby/symbol ", ":").
+            gsub("---", "").
+            gsub(/! (['"])/, '\1').
+            gsub(/^( +)-/, '\1  -').
+            split("\n").
+            map(&:rstrip).
+            reject!(&:empty?).
+            join("\n")
+        end
+
+        # Get the pillar path
+        root = File.expand_path(@config.pillar_root || "salt/roots/pillar")
+        minion = '*' # This probably should be configurable
+
+        # Grab the existing top.sls file data
+        top = Hash.new{ |h, k| h[k] = Hash.new(&h.default_proc) }.
+          merge!(YAML.load(File.open(File.join(root, "top.sls"))) || {})
+
+        # Clean out existing generated Pillar data
+        if top['base'][minion].is_a?(Array)
+          FileUtils.rm_r(File.join(root, "_gen"))
+          top['base'][minion].delete_if{ |m| m =~ /^_gen/ }
+        end
+
+        # Write out each pillar file and save top.sls changes
+        @config.pillar_data.each_with_index do |(file, data), idx|
+          @machine.env.ui.info "Generating Pillar data in #{file}.sls..."
+
+          top['base'][minion].is_a?(Array) ?
+            top['base'][minion] |= ["_gen/#{file}"] :
+            top['base'][minion]  = ["_gen/#{file}"]
+
+          FileUtils.mkdir_p(File.join(root, "_gen"))
+          File.open(File.join(root, "_gen/#{file}.sls"), "w") do |f|
+            f.write(cleanyaml[data])
+          end
+
+          # Write changes to top.sls if needed
+          if idx == @config.pillar_data.size - 1
+            @machine.env.ui.info "Updating top.sls for Pillar..."
+            File.open(File.join(root, "top.sls"), "w") do |f|
+              f.write(cleanyaml[top])
+            end
+          end
+        end
+      end
+
       # Copy master and minion configs to VM
       def upload_configs
         if @config.minion_config

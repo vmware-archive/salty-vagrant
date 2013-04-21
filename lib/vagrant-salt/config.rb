@@ -18,6 +18,8 @@ module VagrantPlugins
       attr_accessor :bootstrap_script
       attr_accessor :verbose
       attr_accessor :seed_master
+      attr_accessor :pillar_root
+      attr_reader   :pillar_data
 
       ## bootstrap options
       attr_accessor :temp_config_dir
@@ -41,6 +43,8 @@ module VagrantPlugins
         @bootstrap_script = UNSET_VALUE
         @verbose = UNSET_VALUE
         @seed_master = UNSET_VALUE
+        @pillar_root = UNSET_VALUE
+        @pillar_data = UNSET_VALUE
         @temp_config_dir = UNSET_VALUE
         @install_type = UNSET_VALUE
         @install_args = UNSET_VALUE
@@ -63,6 +67,8 @@ module VagrantPlugins
         @bootstrap_script   = nil if @bootstrap_script == UNSET_VALUE
         @verbose            = nil if @verbose == UNSET_VALUE
         @seed_master        = nil if @seed_master == UNSET_VALUE
+        @pillar_root        = nil if @pillar_root == UNSET_VALUE
+        @pillar_data        = nil if @pillar_data == UNSET_VALUE
         @temp_config_dir    = nil if @temp_config_dir == UNSET_VALUE
         @install_type       = nil if @install_type == UNSET_VALUE
         @install_args       = nil if @install_args == UNSET_VALUE
@@ -71,6 +77,13 @@ module VagrantPlugins
         @no_minion          = nil if @no_minion == UNSET_VALUE
         @bootstrap_options  = nil if @bootstrap_options == UNSET_VALUE
 
+      end
+
+      def pillar(name, data)
+        if !@pillar_data.is_a?(Hash)
+          @pillar_data = {}
+        end
+        @pillar_data.has_key?(name) ? @pillar_data[name].deep_merge!(data) : @pillar_data[name] = data
       end
 
       def validate(machine)

@@ -1,12 +1,10 @@
 require 'json'
-require 'yaml'
 
 module VagrantPlugins
   module Salt
     class Provisioner < Vagrant.plugin("2", :provisioner)
     
       def provision
-        prepare_pillar
         upload_configs
         upload_keys
         run_bootstrap_script
@@ -150,63 +148,9 @@ module VagrantPlugins
       end
 
       ## Actions
-      # Export pillar data
-      def prepare_pillar
-        prepkeys = lambda do |hash|
-          h = {}
-          hash.each do |k, v|
-            h.merge!(k.to_s => (v.is_a?(Hash) ? prepkeys[v] : v))
-          end
-        end
-
-        # Convert to YAML and remove some extra stuff that may get added in
-        cleanyaml = lambda do |data|
-          prepkeys[data].to_yaml.
-            gsub("!ruby/symbol ", ":").
-            gsub("---", "").
-            gsub(/! (['"])/, '\1').
-            gsub(/^( +)-/, '\1  -').
-            split("\n").
-            map(&:rstrip).
-            reject!(&:empty?).
-            join("\n")
-        end
-
-        # Get the pillar path
-        root = File.expand_path(@config.pillar_root || "salt/roots/pillar")
-        minion = '*' # This probably should be configurable
-
-        # Grab the existing top.sls file data
-        top = Hash.new{ |h, k| h[k] = Hash.new(&h.default_proc) }.
-          merge!(YAML.load(File.open(File.join(root, "top.sls"))) || {})
-
-        # Clean out existing generated Pillar data
-        if top['base'][minion].is_a?(Array)
-          FileUtils.rm_r(File.join(root, "_gen"))
-          top['base'][minion].delete_if{ |m| m =~ /^_gen/ }
-        end
-
-        # Write out each pillar file and save top.sls changes
-        @config.pillar_data.each_with_index do |(file, data), idx|
-          @machine.env.ui.info "[salt:pillar] Generating data in #{file}.sls..."
-
-          top['base'][minion].is_a?(Array) ?
-            top['base'][minion] |= ["_gen/#{file}"] :
-            top['base'][minion]  = ["_gen/#{file}"]
-
-          FileUtils.mkdir_p(File.join(root, "_gen"))
-          File.open(File.join(root, "_gen/#{file}.sls"), "w") do |f|
-            f.write(cleanyaml[data])
-          end
-
-          # Write changes to top.sls if needed
-          if idx == @config.pillar_data.size - 1
-            @machine.env.ui.info "[salt:pillar] Updating top.sls..."
-            File.open(File.join(root, "top.sls"), "w") do |f|
-              f.write(cleanyaml[top])
-            end
-          end
-        end
+      # Get pillar string to pass with the salt command
+      def get_pillar
+        " pillar='#{@config.pillar_data.to_json}'" if !@config.pillar_data.empty?
       end
 
       # Copy master and minion configs to VM
@@ -344,14 +288,14 @@ module VagrantPlugins
           @machine.env.ui.info "Calling state.highstate... (this may take a while)"
           if @config.install_master
             @machine.communicate.sudo("salt '*' saltutil.sync_all")
-            @machine.communicate.sudo("salt '*' state.highstate --verbose") do |type, data|
+            @machine.communicate.sudo("salt '*' state.highstate --verbose#{get_pillar}") do |type, data|
               if @config.verbose
                 @machine.env.ui.info(data)
               end
             end
           else
             @machine.communicate.sudo("salt-call saltutil.sync_all")
-            @machine.communicate.sudo("salt-call state.highstate -l debug") do |type, data|
+            @machine.communicate.sudo("salt-call state.highstate -l debug#{get_pillar}") do |type, data|
               if @config.verbose
                 @machine.env.ui.info(data)
               end

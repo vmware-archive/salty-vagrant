@@ -134,6 +134,10 @@ temp_config_dir  (/tmp)
     Path on the guest box that config and bootstrap files will be copied 
     to before placing in the salt directories
 
+pillar_data
+    Get pillar data that has been set (this is read only because data
+    should be set using the ``pillar`` command referenced below)
+
 verbose          (true/false)
     Prints bootstrap script output to screen
 
@@ -164,6 +168,37 @@ Installing from source
 
 Miscellaneous
 =============
+
+Pillar Data
+-----------
+
+You can export pillar data for use during provisioning by using the ``pillar``
+command. Each call will merge the data so you can safely call it multiple
+times.  Here is an example:
+
+```ruby
+      config.vm.provision :salt do |salt|
+
+        # Export hostnames for webserver config
+        salt.pillar({
+          "hostnames" => {
+            "www" => "www.example.com",
+            "intranet" => "intranet.example.com"
+          }
+        })
+
+        # Export database credentials
+        salt.pillar({
+          "database" => {
+            "user" => "jdoe",
+            "password" => "topsecret"
+          }
+        })
+
+        salt.run_highstate = true
+
+      end
+```
 
 Using Remote Salt Master
 ------------------------

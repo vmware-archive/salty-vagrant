@@ -176,7 +176,6 @@ You can export pillar data for use during provisioning by using the ``pillar``
 command. Each call will merge the data so you can safely call it multiple
 times.  Here is an example:
 
-```ruby
       config.vm.provision :salt do |salt|
 
         # Export hostnames for webserver config
@@ -198,7 +197,6 @@ times.  Here is an example:
         salt.run_highstate = true
 
       end
-```
 
 Using Remote Salt Master
 ------------------------

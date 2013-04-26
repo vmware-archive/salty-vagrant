@@ -174,7 +174,7 @@ Pillar Data
 
 You can export pillar data for use during provisioning by using the ``pillar``
 command. Each call will merge the data so you can safely call it multiple
-times.  Here is an example:
+times.  Here is an example::
 
       config.vm.provision :salt do |salt|
 

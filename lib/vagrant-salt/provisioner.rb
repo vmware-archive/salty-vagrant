@@ -3,15 +3,14 @@ require 'json'
 module VagrantPlugins
   module Salt
     class Provisioner < Vagrant.plugin("2", :provisioner)
-    
       def provision
         upload_configs
         upload_keys
         run_bootstrap_script
 
-        if @config.seed_master and @config.install_master
-          seed_master
-        end
+        # if @config.seed_master and @config.install_master
+        #   seed_master
+        # end
 
         if @config.accept_keys
           @machine.env.ui.warn "ATTENTION: 'salt.accept_keys' is deprecated. Please use salt.seed_master to upload your minion keys"
@@ -115,6 +114,17 @@ module VagrantPlugins
           options = "%s -c %s" % [options, config_dir]
         end
 
+        if @config.seed_master and @config.install_master
+          seed_dir = "/tmp/minion-seed-keys"
+          @machine.communicate.sudo("mkdir -p -m777 #{seed_dir}")
+          @config.seed_master.each do |name, keyfile|
+            sourcepath = expanded_path(keyfile).to_s
+            dest = "#{seed_dir}/seed-#{name}.pub"
+            @machine.communicate.upload(sourcepath, dest)   
+          end
+          options = "#{options} -k #{seed_dir}" 
+        end
+
         if configure and !install
           options = "%s -C" % options
         else
@@ -122,6 +132,8 @@ module VagrantPlugins
           if @config.install_master
             options = "%s -M" % options
           end
+
+
 
           if @config.install_syndic
             options = "%s -S" % options

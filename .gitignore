@@ -3,3 +3,5 @@
 *.sublime-workspace
 /pkg/
 *.gem
+*~
+/lib/vagrant_init.rb

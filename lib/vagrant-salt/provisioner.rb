@@ -160,6 +160,11 @@ module VagrantPlugins
       end
 
       ## Actions
+      # Get pillar string to pass with the salt command
+      def get_pillar
+        " pillar='#{@config.pillar_data.to_json}'" if !@config.pillar_data.empty?
+      end
+
       # Copy master and minion configs to VM
       def upload_configs
         if @config.minion_config
@@ -295,14 +300,14 @@ module VagrantPlugins
           @machine.env.ui.info "Calling state.highstate... (this may take a while)"
           if @config.install_master
             @machine.communicate.sudo("salt '*' saltutil.sync_all")
-            @machine.communicate.sudo("salt '*' state.highstate --verbose") do |type, data|
+            @machine.communicate.sudo("salt '*' state.highstate --verbose#{get_pillar}") do |type, data|
               if @config.verbose
                 @machine.env.ui.info(data)
               end
             end
           else
             @machine.communicate.sudo("salt-call saltutil.sync_all")
-            @machine.communicate.sudo("salt-call state.highstate -l debug") do |type, data|
+            @machine.communicate.sudo("salt-call state.highstate -l debug#{get_pillar}") do |type, data|
               if @config.verbose
                 @machine.env.ui.info(data)
               end

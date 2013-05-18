@@ -64,8 +64,8 @@ module VagrantPlugins
         @accept_keys        = nil if @accept_keys == UNSET_VALUE
         @bootstrap_script   = nil if @bootstrap_script == UNSET_VALUE
         @verbose            = nil if @verbose == UNSET_VALUE
-        @seed_master        = {}  if @seed_master == UNSET_VALUE
-        @pillar_data        = nil if @pillar_data == UNSET_VALUE
+        @seed_master        = nil if @seed_master == UNSET_VALUE
+        @pillar_data        = {}  if @pillar_data == UNSET_VALUE
         @temp_config_dir    = nil if @temp_config_dir == UNSET_VALUE
         @install_type       = nil if @install_type == UNSET_VALUE
         @install_args       = nil if @install_args == UNSET_VALUE

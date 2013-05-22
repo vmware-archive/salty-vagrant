@@ -3,7 +3,7 @@ Salty Vagrant
 ==============
 Provision `Vagrant`_ boxes using `Saltstack`_.
 
-Help and discussion can be found at ``#salt`` on Freenode IRC (just ping ``akoumjian``) 
+Help and discussion can be found at ``#salt`` on Freenode IRC (just ping ``akoumjian``)
 or the `salt-users mailing list`_.
 
 .. _`Vagrant`: http://www.vagrantup.com/
@@ -15,13 +15,13 @@ or the `salt-users mailing list`_.
 Introduction
 ============
 
-`Salty Vagrant`_ is a plugin for Vagrant which lets you use salt as a 
-provisioning tool. You can use your existing salt formulas and configs 
+`Salty Vagrant`_ is a plugin for Vagrant which lets you use salt as a
+provisioning tool. You can use your existing salt formulas and configs
 to build up development environments.
 
 .. _`Salty Vagrant`: https://github.com/saltstack/salty-vagrant
 
-The simplest way to use `Salty Vagrant`_ is by configuring it for 
+The simplest way to use `Salty Vagrant`_ is by configuring it for
 masterless mode. With this setup, you use a standalone minion along
 with your file_roots and/or pillar_roots. See the ``examples/`` folder
 for more details.
@@ -43,7 +43,7 @@ Masterless (Quick Start)
 Configuration
 =============
 
-Here is an extremely simple ``Vagrantfile``, to be used with 
+Here is an extremely simple ``Vagrantfile``, to be used with
 the above masterless setup::
 
     Vagrant.configure("2") do |config|
@@ -51,7 +51,7 @@ the above masterless setup::
       config.vm.box = "precise64"
 
       ## For masterless, mount your salt file root
-      config.vm.synced_folder "salt/roots/", "/srv/"
+      config.vm.synced_folder "salt/roots/", "/srv/salt/"
 
       ## Use all the defaults:
       config.vm.provision :salt do |salt|
@@ -88,7 +88,7 @@ install_type     (stable | git | daily)
     daily ppa, or git treeish.
 
 install_args     (develop)
-    When performing a git install, you can specify a branch, tag, or 
+    When performing a git install, you can specify a branch, tag, or
     any treeish.
 
 always_install   (true/false)
@@ -128,10 +128,10 @@ seed_master  {minion_name:/path/to/key.pub}
 Other
 -----
 bootstrap_script (salt/bootstrap_salt.sh)
-    Path to a custom `bootstrap`_ script 
+    Path to a custom `bootstrap`_ script
 
 temp_config_dir  (/tmp)
-    Path on the guest box that config and bootstrap files will be copied 
+    Path on the guest box that config and bootstrap files will be copied
     to before placing in the salt directories
 
 pillar_data
@@ -172,8 +172,8 @@ Miscellaneous
 Pillar Data
 -----------
 
-You can export pillar data for use during provisioning by using the ``pillar`` 
-command. Each call will merge the data so you can safely call it multiple 
+You can export pillar data for use during provisioning by using the ``pillar``
+command. Each call will merge the data so you can safely call it multiple
 times. The data passed in should only be hashes and lists. Here is an example::
 
       config.vm.provision :salt do |salt|
@@ -201,7 +201,7 @@ times. The data passed in should only be hashes and lists. Here is an example::
 Using Remote Salt Master
 ------------------------
 
-If you are already using `Salt`_ for deployment, you can use your existing 
+If you are already using `Salt`_ for deployment, you can use your existing
 master to provision your vagrant boxes as well. You will need to do one of the
 following:
 
@@ -213,16 +213,16 @@ following:
 Preseeding Vagrant Minion Keys
 ------------------------------
 
-On the master, create the keypair and add the public key to the accepted minions 
+On the master, create the keypair and add the public key to the accepted minions
 folder::
 
     root@saltmaster# salt-key --gen-keys=[minion_id]
     root@saltmaster# cp [minion_id].pub /etc/salt/pki/master/minions/[minion_id]
 
-Replace ``[minion_id]`` with the id you would like to assign the minion. 
+Replace ``[minion_id]`` with the id you would like to assign the minion.
 
-Next you want to bundle the key pair along with your Vagrantfile, 
-the salt_provisioner.rb, and your minion config. The directory should look 
+Next you want to bundle the key pair along with your Vagrantfile,
+the salt_provisioner.rb, and your minion config. The directory should look
 something like this::
 
     myvagrant/
@@ -233,8 +233,8 @@ something like this::
                 minion.pem
                 minion.pub
 
-You will need to determine your own secure method of transferring this 
-package. Leaking the minion's private key poses a security risk to your salt 
+You will need to determine your own secure method of transferring this
+package. Leaking the minion's private key poses a security risk to your salt
 network.
 
 The are two required settings for your ``minion.conf`` file::
@@ -242,12 +242,12 @@ The are two required settings for your ``minion.conf`` file::
     master: [master_fqdn]
     id: [minion_id]
 
-Make sure you use the same ``[minion_id]`` that you used on the master or 
+Make sure you use the same ``[minion_id]`` that you used on the master or
 it will not match with the key.
 
 Create/Update your ``Vagrantfile`` per the example provided in the `Configuration`_ section.
 
-Finally, you should be able to run ``vagrant up`` and the salt should put your 
+Finally, you should be able to run ``vagrant up`` and the salt should put your
 vagrant minion in state.highstate.
 
 

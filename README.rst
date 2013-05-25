@@ -47,7 +47,7 @@ Here is an extremely simple ``Vagrantfile``, to be used with
 the above masterless setup::
 
     Vagrant.configure("2") do |config|
-      ## Chose your base box
+      ## Choose your base box
       config.vm.box = "precise64"
 
       ## For masterless, mount your salt file root

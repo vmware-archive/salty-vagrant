@@ -165,6 +165,12 @@ Installing from source
 6. ``gem build vagrant-salt.gemspec``
 7. ``vagrant plugin install vagrant-salt-[version].gem``
 
+If you'd like to include the latest stable revision of the salt-bootstrap script, run the following after step 5:
+
+1. ``cd scripts``
+2. ``git pull origin stable``
+3. Rebuild the gem if you had built it previously.
+
 
 Miscellaneous
 =============

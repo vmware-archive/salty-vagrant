@@ -157,13 +157,12 @@ Supported Operating Systems
 Installing from source
 ----------------------
 
-1. ``wget https://github.com/saltstack/salty-vagrant/tarball/master -O salty-vagrant.tar.gz``
-2. ``tar zxf salty-vagrant.tar.gz``
-3. ``cd saltstack-salty-vagrant-[hash]``
-4. ``git submodule init``
-5. ``git submodule update``
-6. ``gem build vagrant-salt.gemspec``
-7. ``vagrant plugin install vagrant-salt-[version].gem``
+1. ``git clone https://github.com/saltstack/salty-vagrant.git```
+2. ``cd salty-vagrant``
+3. ``git submodule init``
+4. ``git submodule update``
+5. ``gem build vagrant-salt.gemspec``
+6. ``vagrant plugin install vagrant-salt-[version].gem``
 
 
 Miscellaneous

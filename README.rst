@@ -56,6 +56,7 @@ the above masterless setup::
       ## Use all the defaults:
       config.vm.provision :salt do |salt|
 
+        salt.salt_minion = "salt/minion"
         salt.run_highstate = true
 
       end

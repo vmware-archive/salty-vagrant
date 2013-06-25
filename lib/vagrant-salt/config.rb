@@ -19,6 +19,7 @@ module VagrantPlugins
       attr_accessor :verbose
       attr_accessor :seed_master
       attr_reader   :pillar_data
+      attr_accessor :template_values
 
       ## bootstrap options
       attr_accessor :temp_config_dir
@@ -50,6 +51,7 @@ module VagrantPlugins
         @install_syndic = UNSET_VALUE
         @no_minion = UNSET_VALUE
         @bootstrap_options = UNSET_VALUE
+        @template_values = UNSET_VALUE
       end
 
       def finalize!
@@ -73,7 +75,7 @@ module VagrantPlugins
         @install_syndic     = nil if @install_syndic == UNSET_VALUE
         @no_minion          = nil if @no_minion == UNSET_VALUE
         @bootstrap_options  = nil if @bootstrap_options == UNSET_VALUE
-
+        @template_values    = nil if @template_values == UNSET_VALUE
       end
 
       def pillar(data)
@@ -90,7 +92,7 @@ module VagrantPlugins
         end
 
         if @master_key && @master_pub
-          if !@minion_key && !@minion_pub
+          if !@no_minion && !@minion_key && !@minion_pub
             errors << I18n.t("salt.missing_key")
           end
         end

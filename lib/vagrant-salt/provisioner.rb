@@ -1,4 +1,6 @@
 require 'json'
+require 'erb'
+require 'tempfile'
 
 module VagrantPlugins
   module Salt
@@ -169,13 +171,39 @@ module VagrantPlugins
       def upload_configs
         if @config.minion_config
           @machine.env.ui.info "Copying salt minion config to vm."
-          @machine.communicate.upload(expanded_path(@config.minion_config).to_s, temp_config_dir + "/minion")
+          upload_eval_template(expanded_path(@config.minion_config).to_s, temp_config_dir + "/minion")
         end
 
         if @config.master_config
           @machine.env.ui.info "Copying salt master config to vm."
-          @machine.communicate.upload(expanded_path(@config.master_config).to_s, temp_config_dir + "/master")
+          upload_eval_template(expanded_path(@config.master_config).to_s, temp_config_dir + "/master")
         end
+      end
+
+      # Uploade evaluated template
+      def upload_eval_template(template_path, upload_path)
+        tempfile = Tempfile.new("salty-vagrant")
+        tempfile.write(eval_template(template_path))
+        tempfile.close
+        @machine.communicate.upload(tempfile.path, upload_path)
+        tempfile.unlink
+      end
+
+      class Templater
+        attr_accessor :template_values
+        def initialize template_values
+          @template_values = template_values
+        end
+        def get_binding
+          binding
+        end
+      end
+
+      # Evaluate config file through template engine
+      def eval_template(template_path)
+        templater = Templater.new @config.template_values
+        erb = ERB.new(File.read(template_path))
+        erb.result(templater.get_binding)
       end
 
       # Copy master and minion keys to VM

@@ -8,11 +8,12 @@ module VagrantPlugins
       def provision
         upload_configs
         upload_keys
-        run_bootstrap_script
 
-        # if @config.seed_master and @config.install_master
-        #   seed_master
-        # end
+        if @config.seed_master and @config.install_master
+          seed_master
+        end
+
+        run_bootstrap_script
 
         if @config.accept_keys
           @machine.env.ui.warn "ATTENTION: 'salt.accept_keys' is deprecated. Please use salt.seed_master to upload your minion keys"
@@ -22,20 +23,22 @@ module VagrantPlugins
         call_highstate
       end
 
+      def seed_dir
+        @config.seed_dir || "/tmp/minion-seed-keys"
+      end
+
       def seed_master
-        @machine.env.ui.info 'Uploading %d keys to /etc/salt/pki/master/minions/' % config.seed_master.length
-        staged_keys = keys('minions_pre')
+        @machine.env.ui.info "Creating seed directory #{seed_dir}"
+        @machine.communicate.sudo("mkdir -p -m777 #{seed_dir}")
+
+        @machine.env.ui.info "Uploading #{@config.seed_master.length} keys to #{seed_dir}"
         @config.seed_master.each do |name, keyfile|
-          if staged_keys.include? name
-            @machine.env.ui.warn "Accepting staged key: %s" %name
-            @machine.communicate.sudo("salt-key -a %s" %name)
-            next
-          end
+          # here the name of the key MUST be equal to minion hostname in form of fqdn
+          # or to minion id if it is set in minion config file
           sourcepath = expanded_path(keyfile).to_s
-          dest = '/tmp/seed-%s.pub' %name 
-          
+          dest = "#{seed_dir}/#{name}"
+          @machine.env.ui.info "Uploading #{sourcepath} into #{dest}"
           @machine.communicate.upload(sourcepath, dest)   
-          @machine.communicate.sudo("mv /tmp/seed-%s.pub /etc/salt/pki/master/minions/%s" %[name, name])   
         end
       end
 
@@ -117,14 +120,7 @@ module VagrantPlugins
         end
 
         if @config.seed_master and @config.install_master
-          seed_dir = "/tmp/minion-seed-keys"
-          @machine.communicate.sudo("mkdir -p -m777 #{seed_dir}")
-          @config.seed_master.each do |name, keyfile|
-            sourcepath = expanded_path(keyfile).to_s
-            dest = "#{seed_dir}/seed-#{name}.pub"
-            @machine.communicate.upload(sourcepath, dest)   
-          end
-          options = "#{options} -k #{seed_dir}" 
+          options = "%s -k %s" % [options, seed_dir]
         end
 
         if configure and !install
@@ -134,8 +130,6 @@ module VagrantPlugins
           if @config.install_master
             options = "%s -M" % options
           end
-
-
 
           if @config.install_syndic
             options = "%s -S" % options
@@ -185,6 +179,7 @@ module VagrantPlugins
         tempfile = Tempfile.new("salty-vagrant")
         tempfile.write(eval_template(template_path))
         tempfile.close
+        @machine.env.ui.info "Uploading evaluated template into #{upload_path}."
         @machine.communicate.upload(tempfile.path, upload_path)
         tempfile.unlink
       end
@@ -201,6 +196,7 @@ module VagrantPlugins
 
       # Evaluate config file through template engine
       def eval_template(template_path)
+        @machine.env.ui.info "Evaluating config template #{template_path}."
         templater = Templater.new @config.template_values
         erb = ERB.new(File.read(template_path))
         erb.result(templater.get_binding)

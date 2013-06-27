@@ -20,6 +20,7 @@ module VagrantPlugins
       attr_accessor :seed_master
       attr_reader   :pillar_data
       attr_accessor :template_values
+      attr_accessor :seed_dir
 
       ## bootstrap options
       attr_accessor :temp_config_dir
@@ -52,6 +53,7 @@ module VagrantPlugins
         @no_minion = UNSET_VALUE
         @bootstrap_options = UNSET_VALUE
         @template_values = UNSET_VALUE
+        @seed_dir = UNSET_VALUE
       end
 
       def finalize!
@@ -76,6 +78,7 @@ module VagrantPlugins
         @no_minion          = nil if @no_minion == UNSET_VALUE
         @bootstrap_options  = nil if @bootstrap_options == UNSET_VALUE
         @template_values    = nil if @template_values == UNSET_VALUE
+        @seed_dir           = nil if @seed_dir == UNSET_VALUE
       end
 
       def pillar(data)

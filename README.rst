@@ -56,7 +56,7 @@ the above masterless setup::
       ## Use all the defaults:
       config.vm.provision :salt do |salt|
 
-        salt.salt_minion = "salt/minion"
+        salt.minion_config = "salt/minion"
         salt.run_highstate = true
 
       end
@@ -249,5 +249,3 @@ Create/Update your ``Vagrantfile`` per the example provided in the `Configuratio
 
 Finally, you should be able to run ``vagrant up`` and the salt should put your
 vagrant minion in state.highstate.
-
-

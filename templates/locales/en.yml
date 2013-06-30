@@ -12,3 +12,5 @@ en:
       Salt Master did not receive minion key.
     bootstrap_failed: |-
       Bootstrap script failed, see /var/log/bootstrap-salt.log on VM.
+    highstate_failed: |-
+      %{salt_call_output}

@@ -158,7 +158,7 @@ Supported Operating Systems
 Installing from source
 ----------------------
 
-1. ``git clone https://github.com/saltstack/salty-vagrant.git```
+1. ``git clone https://github.com/saltstack/salty-vagrant.git``
 2. ``cd salty-vagrant``
 3. ``git submodule init``
 4. ``git submodule update``

@@ -162,8 +162,9 @@ Installing from source
 2. ``cd salty-vagrant``
 3. ``git submodule init``
 4. ``git submodule update``
-5. ``gem build vagrant-salt.gemspec``
-6. ``vagrant plugin install vagrant-salt-[version].gem``
+5. ``gem install rubygems-bundler``
+6. ``gem build vagrant-salt.gemspec``
+7. ``vagrant plugin install vagrant-salt-[version].gem``
 
 If you'd like to include the latest stable revision of the salt-bootstrap script, run the following after step 5:
 

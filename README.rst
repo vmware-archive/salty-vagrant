@@ -1,6 +1,9 @@
 ==============
 Salty Vagrant
 ==============
+
+** DEPRECATED: Vagrant includes a salt provisioner for Vagrant versions 1.3.0 and above **
+
 Provision `Vagrant`_ boxes using `Saltstack`_.
 
 Help and discussion can be found at ``#salt`` on Freenode IRC (just ping ``akoumjian``)

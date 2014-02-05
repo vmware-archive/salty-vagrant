@@ -17,6 +17,7 @@ module VagrantPlugins
       attr_accessor :accept_keys
       attr_accessor :bootstrap_script
       attr_accessor :verbose
+      attr_accessor :fail_on_errors
       attr_accessor :seed_master
       attr_reader   :pillar_data
 
@@ -41,6 +42,7 @@ module VagrantPlugins
         @accept_keys = UNSET_VALUE
         @bootstrap_script = UNSET_VALUE
         @verbose = UNSET_VALUE
+        @fail_on_errors = UNSET_VALUE
         @seed_master = UNSET_VALUE
         @pillar_data = UNSET_VALUE
         @temp_config_dir = UNSET_VALUE
@@ -64,6 +66,7 @@ module VagrantPlugins
         @accept_keys        = nil if @accept_keys == UNSET_VALUE
         @bootstrap_script   = nil if @bootstrap_script == UNSET_VALUE
         @verbose            = nil if @verbose == UNSET_VALUE
+        @fail_on_errors     = nil if @fail_on_errors == UNSET_VALUE
         @seed_master        = nil if @seed_master == UNSET_VALUE
         @pillar_data        = {}  if @pillar_data == UNSET_VALUE
         @temp_config_dir    = nil if @temp_config_dir == UNSET_VALUE

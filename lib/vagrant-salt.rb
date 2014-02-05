@@ -7,6 +7,7 @@ module VagrantPlugins
 
     lib_path = Pathname.new(File.expand_path("../vagrant-salt", __FILE__))
     autoload :Errors, lib_path.join("errors")
+    autoload :StateResultsParser, lib_path.join("state_results_parser")
 
     @source_root = Pathname.new(File.expand_path("../../", __FILE__))
 

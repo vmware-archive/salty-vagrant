@@ -148,6 +148,10 @@ pillar_data
 verbose          (true/false)
     Prints bootstrap script output to screen
 
+fail_on_errors   (true/false)
+    Causes provisioning to cease if state.highstate fails and prints out the
+    relevant bits from the salt-call output.  Set to 'false' by default.
+
 
 Installation Notes
 ==================
